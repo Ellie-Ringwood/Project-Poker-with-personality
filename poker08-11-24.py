@@ -1,4 +1,5 @@
 import random
+
 ##objects
 class Card:
     def __init__(self,value):
@@ -8,6 +9,7 @@ class Card:
     def __str__(self):
         return f"{self.value}"
 
+###################################################################
 class Deck:
     def __init__(self):
         self.values = ["Jack","Queen","King"]
@@ -36,12 +38,25 @@ class Deck:
 
     def dealCard(self):
         return self.cards.pop()
-    
+
+###################################################################
 class Table:
     def __init__(self):
-       self.communityCard = Card(-1)
-       self.pot = 0
-       print("table constructed") 
+        self.players = []
+        self.resetTable()
+        self.blindAmount = 10
+        self.maxRaisesEach = 2
+        self.raiseAmount = 20
+        p1 = Player(700,"1")
+        p2 = Player(400, "2")
+        self.possiblePlayers = [p1,p2]
+        #print("table constructed") 
+
+    def resetTable(self):
+        self.communityCard = Card(-1)
+        self.pot = 0
+        self.currentBetAmount = 0
+        self.continueBetting = True
 
     def getCommunityCard(self):
         return self.communityCard
@@ -55,16 +70,55 @@ class Table:
     def getPot(self):
         return self.pot
 
+    def addCurrentBet(self, amount):
+        self.currentBetAmount += amount
+
+    def getCurrentBet(self):
+        return self.currentBetAmount
+
+    def playerFolds(self, player):
+        self.players.remove(player)
+        #self.playersFolded += 1
+        #if (len(players) - self.playersFolded <= 1):
+        if (len(self.players) < 2):
+            print("all or all but one player folded")
+            self.continueBetting = False
+
+    def getCurrentPlayers(self):
+        return self.players
+
+    def getPlayersWithFunds(self):
+        for player in self.possiblePlayers:
+            if (player.availableFunds(self.blindAmount) == True):
+                self.players.append(player)
+            else:
+                print(player.getName()," does not have enough funds for the blind")
+
+    def currentDifferenceInBets(self):
+        diff = 0
+        for player in self.players:
+            diff += player.getDifference()
+        return diff
+
+    def endOfHand(self):
+        for player in self.players:
+            player.resetHand()
+        self.resetTable()
+        
+###################################################################
 class Player:
     def __init__(self,startingBalance, name):
         self.balance = startingBalance
-        self.amountBetThisRound = 0
-        self.timesRaisedThisRound = 0
-        self.currentCard = Card(-1)
+        self.resetHand()
         self.name = name
         self.actions = ["CHECK","CALL","RAISE","FOLD"]
-
         #print("player constructed")
+
+    def resetHand(self):
+        self.currentCard = Card(-1)
+        self.folded = False
+        self.amountBetThisRound = 0
+        self.timesRaisedThisRound = 0
 
     def getBalance(self):
         return self.balance
@@ -85,7 +139,13 @@ class Player:
         else:
             return True
         
-    def changeAmountBetThisRound(self, amount):
+    def getDifference(self):
+        diff = table.getCurrentBet() - self.getAmountBetThisRound()
+        diff = max(diff,0)
+        ##print("difference:",diff)
+        return diff
+        
+    def addAmountBetThisRound(self, amount):
         self.amountBetThisRound += amount
     
     def resetAmountBetThisRound(self):
@@ -94,13 +154,19 @@ class Player:
     def getAmountBetThisRound(self):
         return self.amountBetThisRound
 
-    def changeFunds(self, amount):
-        #print(self.name, " Balance: ", self.balance)
-        self.balance += amount
-        #print("Amount: ", amount)
+    def removeBlind(self):
+        self.balance -= table.blindAmount
+        self.addAmountBetThisRound(table.blindAmount)
+
+    def removeFunds(self, amount):
+        self.balance -= amount
         print(self.name, "New balance: ", self.balance)
-        if(amount < 0):
-            self.changeAmountBetThisRound(-amount)
+        self.addAmountBetThisRound(amount)
+        table.addCurrentBet(amount)
+
+    def addFunds(self, amount):
+        self.balance += amount
+        print(self.name, "New balance: ", self.balance)
 
     def getValidAction(self, canCheck, canCall, canRaise):
         while True:
@@ -117,7 +183,7 @@ class Player:
                     print("You cannot call currently, enter valid action:")
                     continue
                 elif((action == "RAISE")and(canRaise == False)):
-                    print("You cannot raise as maximum raises each is",maxRaisesEach,", enter valid action:")
+                    print("You cannot raise as maximum raises per player is",table.addToPotmaxRaisesEach,", enter valid action:")
                     continue
                 else:
                     break
@@ -125,131 +191,160 @@ class Player:
                 print("Please enter valid action")
         return action
 
-        
-
-    def bet(self, previousPlayer):
+    def bet(self):
+        print("Card:",self.currentCard)
         action = ""
 
         print("amount bet so far: ",self.amountBetThisRound)
-        print("previous player amount: ",previousPlayer.getAmountBetThisRound())
+        print("current betting balance:", table.getCurrentBet())
 
-        diff = previousPlayer.getAmountBetThisRound() - self.getAmountBetThisRound()
-        if diff < 0:
-            diff = 0
-        print(diff)
+        diff = self.getDifference()
 
-        print("Enter action from available actions:")
+        print("\nEnter action from available actions:")
         canCall = False
         canCheck = False
         canRaise = False
-        if (self.amountBetThisRound < previousPlayer.getAmountBetThisRound()): ## if bets not equal, needs to call to get to same amount
-            if (self.balance >= diff):
+        if (self.amountBetThisRound < table.getCurrentBet()): ## if bets not equal, needs to call to get to same amount
+            if (self.balance >= diff): ##if has enough funds to call
                 print("Call")
                 canCall = True
         else:
             print("Check")
             canCheck = True
         
-        if (self.timesRaisedThisRound < maxRaisesEach): ## if not past max bets, can raise
-            if(self.balance >= diff+raiseAmount):
+        if (self.timesRaisedThisRound < table.maxRaisesEach): ## if not past max bets, can raise
+            if(self.balance >= diff + table.raiseAmount):
                 print("Raise")
                 canRaise = True
 
         print("Fold")
         action = self.getValidAction(canCheck, canCall, canRaise)
+        print("\n")
 
         match action:
             case "CALL":
-                print("call = add to pot, matching previous bet")
+                self.removeFunds(diff)
+                #print("call = add to pot, matching check or raise")
             case "CHECK":
-                print("check = no adding to pot, matching previous bet - just using blinds")
+                print("check = no adding to pot, matching previous bet - e.g. just using blinds")
             case "RAISE":
-                print("raise = raise by 2 chips")
+                print("raise = raise by raise amount")
+                self.removeFunds(table.raiseAmount)
                 self.timesRaisedThisRound =+ 1
             case "FOLD":
+                self.folded = True
+                table.playerFolds(self)
                 print("fold = lose")
             case _:
                 print("ERROR")
-            
-
-
-##global attributes
-p1 = Player(7,"1")
-p2 = Player(4, "2")
-#p3 = Player(2, "3")
-#possiblePlayers = [p1,p2,p3]
-possiblePlayers = [p1,p2]
-blindAmount = 2
-maxRaisesEach = 2
-raiseAmount = 2
-pot = 0
-turn = 0
-deck = Deck()
+##################################################################################################
 
 ## global functions
-def getPreviousPlayerIndex(index):
+"""def getPreviousPlayerIndex(index):
     previousPlayer = index - 1
     if (previousPlayer < 0):
         previousPlayer = len(players) -1
-    return previousPlayer
+    return previousPlayer"""
+
+def betting():
+    """
+    for i in range(len(table.players)):
+        print ("\nPlayer ", table.players[i].getName(), " turn to bet:")
+        if (table.players[i].folded == False) and (table.continueBetting == True):
+            table.players[i].bet()
+        if (table.continueBetting == False):
+            winner = table.players
+            handNotWon = False"""
+    stillBetting = True
+    i = 0
+    while stillBetting:
+        if (table.currentDifferenceInBets() != 0) or i == 0:
+            for player in table.players:
+                print ("\nPlayer ", player.getName(), " turn to bet:")
+                if (player.folded == False) and (table.continueBetting == True):
+                    player.bet()
+                if (table.continueBetting == False):
+                    #winner = 0
+                    handNotWon = False
+                    print("here")
+                    stillBetting == False
+                    break
+        if (table.currentDifferenceInBets() == 0):
+            stillBetting == False
+        i += 1
+    print("there")
+
+    
+
+def evaluateWinner():
+    return -1
 
 ############################################ main code ############################################
-playersWithFunds = True
+##global attributes
+table = Table()
+playing = True
 hand = 0
+
 # begin game
-while playersWithFunds:
+while playing:
     ## get list of players with funds
-    players = []
-    for player in possiblePlayers:
-        if (player.availableFunds(blindAmount) == True):
-            players.append(player)
-        else:
-            print(player.getName()," does not have enough funds for the blind")
-    if (len(players) < 2):
+    table.getPlayersWithFunds()
+    if (len(table.players) < 2):
         print("Not enough players with funds")
-        playersWithFunds = False
-        break
-    
+        playing = False
+        break 
+
+    ## begin hand
     hand += 1
     print("Hand",hand)
     roundOfPlay = 1
     handNotWon = True
-    ## begin hand
-    while handNotWon:
-        if roundOfPlay == 0:
-            #print(players[0].getName() + "'s starting bankroll: ",players[0].getBalance())
-            #print(players[1].getName() + "'s starting bankroll: ",players[1].getBalance())
-            roundOfPlay += 1
-        elif roundOfPlay == 1:
-            if players:
-                # remove blind amount from player funds
-                for player in players: 
-                    player.changeFunds(- blindAmount) 
-                # shuffle and deal 1 card to each player
-                players[1].changeFunds(-blindAmount) 
-                deck.shuffleDeck()
-                for i in range(len(players)):
-                    players[i].receiveCard(deck.dealCard())
-                # each player bets
-                for i in range(len(players)):
-                    print ("Player ", players[i].getName(), " turn to bet:")
-                    previousPlayer = getPreviousPlayerIndex(i)
-                    players[i].bet(players[previousPlayer])
-                ##### should not be able to raise more than 2 times each
-                ##### check still 2 player not folded
-                roundOfPlay += 1
-        elif roundOfPlay == 2:
-            roundOfPlay += 1
+    winner = -1
+    deck = Deck()
 
+    while handNotWon:
+        if roundOfPlay == 1:
+            if table.players:
+                print("Round 1")
+                print("    Give blinds, get dealt a card, then bet")
+                # remove blind amount from player funds
+                for player in table.players: 
+                    player.removeBlind()
+                table.addCurrentBet(table.blindAmount)
+
+                # shuffle and deal 1 card to each player
+                deck.shuffleDeck()
+                for i in range(len(table.players)):
+                    table.players[i].receiveCard(deck.dealCard())
+
+                # each player bets
+                betting()
+                
+                roundOfPlay += 1
+        elif (roundOfPlay == 2) and handNotWon == True:
+            print("Round 2")
+            print("    get dealt one community card to table, then bet")
             # shuffle and deal 1 community card to the table
             deck.shuffleDeck()
-            #Table.recieveCommunityCard(deck.dealCard())
+            table.recieveCommunityCard(deck.dealCard())
             ####then betting
-        else:
+            betting()
+            roundOfPlay += 1
+        elif (roundOfPlay > 2) and handNotWon == True:
             print("Evaluation")
             ####same value as public card wins
             ####if neither same, highest wins
             handNotWon = False
-            print("End of hand")
+            
+    print("End of hand")
+    ####award money here
+    table.players[winner].addFunds(table.getPot())
+    table.endOfHand()
+
+    ## check still playing
+    print("\npress e to exit:")
+    exit = str(input("")).upper()
+    if exit == "E":
+        playing = False
 
 print("End of game")
