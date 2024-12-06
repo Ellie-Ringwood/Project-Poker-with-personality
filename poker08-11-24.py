@@ -2,9 +2,16 @@ import random
 
 ##objects
 class Card:
-    def __init__(self,value):
+    def __init__(self,value, name):
         self.value = value
+        self.name = name
         #print("card constructed")
+
+    def getValue(self):
+        return self.value
+    
+    def getName(self):
+        return self.name
 
     def __str__(self):
         return f"{self.value}"
@@ -20,7 +27,9 @@ class Deck:
         cards = []
         for suit in range(suits):
             for value in range(len(values)):
-                cards.append(Card(values[value-1]))
+                #cards.append(Card(values[value-1]))
+                cards.append(Card(value,values[value-1]))
+                print(value,values[value-1])
         return cards
 
     def printDeck(self):
@@ -29,7 +38,7 @@ class Deck:
             print(i)
 
     def shuffleDeck(self):
-        tempCards = [len(self.cards)]
+        tempCards = []
         while (len(self.cards) > 0):
             randNum = random.randrange(0, len(self.cards))
             tempCards.append(self.cards[randNum])
@@ -53,7 +62,7 @@ class Table:
         #print("table constructed") 
 
     def resetTable(self):
-        self.communityCard = Card(-1)
+        self.communityCard = Card(-1,"null")
         self.pot = 0
         self.currentBetAmount = 0
         self.continueBetting = True
@@ -62,7 +71,10 @@ class Table:
         return self.communityCard
 
     def recieveCommunityCard(self,card):
+        print(card)
         self.communityCard = card
+        print("Community card is a",self.communityCard.getValue())
+        print("Community card is a",self.communityCard.getName())
 
     def addToPot(self, amount):
         self.pot += amount
@@ -88,6 +100,7 @@ class Table:
         return self.players
 
     def getPlayersWithFunds(self):
+        self.players = []
         for player in self.possiblePlayers:
             if (player.availableFunds(self.blindAmount) == True):
                 self.players.append(player)
@@ -100,7 +113,11 @@ class Table:
             diff += player.getDifference()
         return diff
 
-    def endOfHand(self):
+    def endOfHand(self, winnerIndexes):
+        if len(winnerIndexes) == 1:
+            table.players[winnerIndexes[0]].addFunds(table.getPot())
+        else:
+            print("multiple winners")
         for player in self.players:
             player.resetHand()
         self.resetTable()
@@ -115,7 +132,7 @@ class Player:
         #print("player constructed")
 
     def resetHand(self):
-        self.currentCard = Card(-1)
+        self.currentCard = Card(-1,"null")
         self.folded = False
         self.amountBetThisRound = 0
         self.timesRaisedThisRound = 0
@@ -157,16 +174,17 @@ class Player:
     def removeBlind(self):
         self.balance -= table.blindAmount
         self.addAmountBetThisRound(table.blindAmount)
+        table.addToPot(table.blindAmount)
 
     def removeFunds(self, amount):
         self.balance -= amount
-        print(self.name, "New balance: ", self.balance)
+        #print(self.name, "New balance: ", self.balance)
         self.addAmountBetThisRound(amount)
-        table.addCurrentBet(amount)
+        table.addToPot(amount)
 
     def addFunds(self, amount):
         self.balance += amount
-        print(self.name, "New balance: ", self.balance)
+        #print(self.name, "New balance: ", self.balance)
 
     def getValidAction(self, canCheck, canCall, canRaise):
         while True:
@@ -192,11 +210,14 @@ class Player:
         return action
 
     def bet(self):
-        print("Card:",self.currentCard)
+        print ("\nPlayer ", self.name, " turn to bet:")
+        print ("Pot:", table.getPot())
+        print ("Balance:", self.balance)
+        print("Card:",self.currentCard.getName())
         action = ""
 
-        print("amount bet so far: ",self.amountBetThisRound)
-        print("current betting balance:", table.getCurrentBet())
+        print("Funds bet so far: ",self.amountBetThisRound)
+        print("Current bet to match:", table.getCurrentBet())
 
         diff = self.getDifference()
 
@@ -206,7 +227,7 @@ class Player:
         canRaise = False
         if (self.amountBetThisRound < table.getCurrentBet()): ## if bets not equal, needs to call to get to same amount
             if (self.balance >= diff): ##if has enough funds to call
-                print("Call")
+                print("Call(",diff,")")
                 canCall = True
         else:
             print("Check")
@@ -214,29 +235,24 @@ class Player:
         
         if (self.timesRaisedThisRound < table.maxRaisesEach): ## if not past max bets, can raise
             if(self.balance >= diff + table.raiseAmount):
-                print("Raise")
+                print("Raise (",diff + table.raiseAmount,")")
                 canRaise = True
 
         print("Fold")
         action = self.getValidAction(canCheck, canCall, canRaise)
-        print("\n")
 
         match action:
-            case "CALL":
+            case "CALL": # add to pot, matching check or raise
                 self.removeFunds(diff)
-                #print("call = add to pot, matching check or raise")
-            case "CHECK":
-                print("check = no adding to pot, matching previous bet - e.g. just using blinds")
-            case "RAISE":
-                print("raise = raise by raise amount")
-                self.removeFunds(table.raiseAmount)
-                self.timesRaisedThisRound =+ 1
-            case "FOLD":
+            case "RAISE": # raise by raise amount + any difference to previous player
+                self.removeFunds(diff + table.raiseAmount)
+                table.addCurrentBet(table.raiseAmount)
+                self.timesRaisedThisRound += 1
+            case "FOLD": # if everyone but one player folds, they automatically win the hand
                 self.folded = True
                 table.playerFolds(self)
-                print("fold = lose")
-            case _:
-                print("ERROR")
+        ## CHECK = no adding to pot, matching previous bet - e.g. just using blinds
+                
 ##################################################################################################
 
 ## global functions
@@ -246,38 +262,41 @@ class Player:
         previousPlayer = len(players) -1
     return previousPlayer"""
 
-def betting():
-    """
-    for i in range(len(table.players)):
-        print ("\nPlayer ", table.players[i].getName(), " turn to bet:")
-        if (table.players[i].folded == False) and (table.continueBetting == True):
-            table.players[i].bet()
-        if (table.continueBetting == False):
-            winner = table.players
-            handNotWon = False"""
+def betting(): ##returns is hand is won yet or not
     stillBetting = True
     i = 0
     while stillBetting:
         if (table.currentDifferenceInBets() != 0) or i == 0:
             for player in table.players:
-                print ("\nPlayer ", player.getName(), " turn to bet:")
                 if (player.folded == False) and (table.continueBetting == True):
                     player.bet()
                 if (table.continueBetting == False):
-                    #winner = 0
-                    handNotWon = False
-                    print("here")
                     stillBetting == False
-                    break
+                    return False
         if (table.currentDifferenceInBets() == 0):
-            stillBetting == False
+            stillBetting = False
         i += 1
-    print("there")
-
-    
+    return True
 
 def evaluateWinner():
-    return -1
+    print("eval")
+
+    for i in range(len(table.players)):
+        if table.players.getCurrentCard().getValue() == table.getCommunityCard().getValue():
+            winnerIndexes = [i]
+
+    winnerIndexes = []
+    playerValues = []
+    for i in range(len(table.players)):
+        card = table.players[i].getCurrentCard().getValue()
+        playerValues.append(card)
+    print(playerValues)
+
+    ###### Do highest value hand evaluation, allow for multiple winners
+            
+
+        
+    return winnerIndexes
 
 ############################################ main code ############################################
 ##global attributes
@@ -294,6 +313,9 @@ while playing:
         playing = False
         break 
 
+    for player in table.players:
+        print("Player",player.getName(),"has a balance of:", player.getBalance())
+
     ## begin hand
     hand += 1
     print("Hand",hand)
@@ -305,8 +327,7 @@ while playing:
     while handNotWon:
         if roundOfPlay == 1:
             if table.players:
-                print("Round 1")
-                print("    Give blinds, get dealt a card, then bet")
+                print("Round 1: Give blinds, get dealt a card, then bet")
                 # remove blind amount from player funds
                 for player in table.players: 
                     player.removeBlind()
@@ -318,28 +339,31 @@ while playing:
                     table.players[i].receiveCard(deck.dealCard())
 
                 # each player bets
-                betting()
+                handNotWon = betting()
                 
                 roundOfPlay += 1
         elif (roundOfPlay == 2) and handNotWon == True:
-            print("Round 2")
-            print("    get dealt one community card to table, then bet")
+            print("Round 2: Table gets dealt one community card, then bet")
             # shuffle and deal 1 community card to the table
             deck.shuffleDeck()
             table.recieveCommunityCard(deck.dealCard())
             ####then betting
-            betting()
+            handNotWon = betting()
             roundOfPlay += 1
         elif (roundOfPlay > 2) and handNotWon == True:
-            print("Evaluation")
+            print("\nEvaluation")
             ####same value as public card wins
             ####if neither same, highest wins
             handNotWon = False
             
     print("End of hand")
     ####award money here
-    table.players[winner].addFunds(table.getPot())
-    table.endOfHand()
+    if len(table.players)  == 1:
+        print("1 unfolded player left")
+        table.endOfHand([0])
+    else:
+        print("multiple unfolded players left")
+        table.endOfHand(evaluateWinner())
 
     ## check still playing
     print("\npress e to exit:")
