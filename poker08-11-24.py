@@ -48,6 +48,13 @@ class Deck:
     def dealCard(self):
         return self.cards.pop()
 
+    def dealSpecificCard(self, cardValue):
+        for card in self.cards:
+            if card.getName() == cardValue:
+                self.cards.remove(card)
+                return card
+
+
 ###################################################################
 class Table:
     def __init__(self):
@@ -114,10 +121,12 @@ class Table:
         return diff
 
     def endOfHand(self, winnerIndexes):
+        len(winnerIndexes) 
         if len(winnerIndexes) == 1:
             table.players[winnerIndexes[0]].addFunds(table.getPot())
         else:
-            print("multiple winners")
+            for playerIndex in winnerIndexes:
+                table.players[playerIndex].addFunds(table.getPot()//len(winnerIndexes))
         for player in self.players:
             player.resetHand()
         self.resetTable()
@@ -279,22 +288,29 @@ def betting(): ##returns is hand is won yet or not
     return True
 
 def evaluateWinner():
-    print("eval")
+    winnerIndexes = []
 
     for i in range(len(table.players)):
-        if table.players.getCurrentCard().getValue() == table.getCommunityCard().getValue():
+        if table.players[i].getCurrentCard().getValue() == table.getCommunityCard().getValue():
             winnerIndexes = [i]
 
-    winnerIndexes = []
     playerValues = []
     for i in range(len(table.players)):
         card = table.players[i].getCurrentCard().getValue()
         playerValues.append(card)
-    print(playerValues)
 
-    ###### Do highest value hand evaluation, allow for multiple winners
-            
+    for card in playerValues:
+        if card == table.getCommunityCard().getValue():
+            winnerIndexes = [i]
+            return winnerIndexes
 
+    maxValue = -1
+    for i in range(len(playerValues)):
+        if playerValues[i] > maxValue:
+            winnerIndexes = [i]
+            maxValue = playerValues[i]
+        elif playerValues[i] == maxValue:
+            winnerIndexes.append(i)
         
     return winnerIndexes
 
@@ -335,8 +351,10 @@ while playing:
 
                 # shuffle and deal 1 card to each player
                 deck.shuffleDeck()
-                for i in range(len(table.players)):
-                    table.players[i].receiveCard(deck.dealCard())
+                table.players[0].receiveCard(deck.dealSpecificCard("Queen"))
+                table.players[1].receiveCard(deck.dealSpecificCard("Queen"))
+                #for i in range(len(table.players)):
+                #    table.players[i].receiveCard(deck.dealCard())
 
                 # each player bets
                 handNotWon = betting()
@@ -359,10 +377,10 @@ while playing:
     print("End of hand")
     ####award money here
     if len(table.players)  == 1:
-        print("1 unfolded player left")
+        #print("1 unfolded player left")
         table.endOfHand([0])
     else:
-        print("multiple unfolded players left")
+        #print("multiple unfolded players left")
         table.endOfHand(evaluateWinner())
 
     ## check still playing
