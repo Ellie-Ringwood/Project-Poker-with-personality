@@ -19,6 +19,9 @@ class Player():
     def getBalance(self):
         return self.balance
     
+    def addBalance(self, amount):
+        self.balance += amount
+    
     def getName(self):
         return self.name
     
@@ -50,10 +53,16 @@ class Player():
     def getAmountBetThisRound(self):
         return self.amountBetThisRound
 
-    def removeBlind(self):
-        self.balance -= self.table.blindAmount
-        self.addAmountBetThisRound(self.table.blindAmount)
-        self.table.addToPot(self.table.blindAmount)
+    def removeBlind(self, position):
+        blind = 0
+        if(position == 0):
+            blind = self.table.blindAmount
+        else:
+            blind = self.table.blindAmount*2
+        
+        self.addBalance(-blind)
+        self.addAmountBetThisRound(blind)
+        self.table.addToPot(blind)
 
     def removeFunds(self, amount):
         self.balance -= amount
@@ -107,7 +116,7 @@ class Player():
         canRaise = False
         if (self.amountBetThisRound < self.table.getCurrentBet()): ## if bets not equal, needs to call to get to same amount
             if (self.balance >= diff): ##if has enough funds to call
-                print(" - Call(",diff,")")
+                print(" - Call (",diff,")")
                 canCall = True
         else:
             print(" - Check")

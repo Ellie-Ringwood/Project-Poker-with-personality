@@ -1,3 +1,4 @@
+import random
 from PlayerClass import Player
 from AgentClass import Agent
 from CardClass import Card
@@ -5,18 +6,22 @@ from CardClass import Card
 class Table:
     def __init__(self):
         self.players = []
+        self.possiblePlayers = [Player(self,10,"Human"), Agent(self,10,"Agent"), Agent(self,0,"Floof")]
+        #self.firstPlayer = 0
+        
         self.resetTable()
+        
         self.blindAmount = 1
         self.maxRaisesEach = 2
-        self.current_round = 1
-        self.raiseAmount = 2*self.current_round
-        p1 = Player(self,7,"Human")
-        agent = Agent(self,4,"Agent")
-        #p2 = Player(400, "2")
-        self.possiblePlayers = [p1,agent]
+        self.hand = 0
+        self.raiseAmount = 2 * self.currentRound
         #print("table constructed") 
 
     def resetTable(self):
+        self.currentRound = 1
+        self.handNotWon = True
+        self.winner = -1
+        self.firstPlayerIndex = random.randint(0, len(self.possiblePlayers) - 1)
         self.communityCard = Card(-1,"null")
         self.pot = 0
         self.currentBetAmount = 0
@@ -31,6 +36,9 @@ class Table:
         print("Community card is a",self.communityCard.getValue())
         print("Community card is a",self.communityCard.getName())
 
+    def newRound(self):
+         self.raiseAmount =2 * self.current_round
+
     def addToPot(self, amount):
         self.pot += amount
 
@@ -39,7 +47,7 @@ class Table:
 
     def addCurrentBet(self, amount):
         self.currentBetAmount += amount
-
+        
     def getCurrentBet(self):
         return self.currentBetAmount
 
@@ -53,14 +61,28 @@ class Table:
 
     def getCurrentPlayers(self):
         return self.players
+    
+    def playersHaveFunds(self, player):
+        if (player.availableFunds(self.blindAmount) == True):
+            self.players.append(player)
+        else:
+            print(player.getName()," does not have enough funds for the blind")
 
     def getPlayersWithFunds(self):
         self.players = []
-        for player in self.possiblePlayers:
-            if (player.availableFunds(self.blindAmount) == True):
-                self.players.append(player)
+
+        ## puts players that have enough funds in a list, in order, starting with the first player
+        for i in range(len(self.possiblePlayers)):
+            if (i + self.firstPlayerIndex) < len(self.possiblePlayers):
+                self.playersHaveFunds(self.possiblePlayers[i + self.firstPlayerIndex])
             else:
-                print(player.getName()," does not have enough funds for the blind")
+                self.playersHaveFunds(self.possiblePlayers[(i + self.firstPlayerIndex) - len(self.possiblePlayers)])
+        
+        """
+        ## shows order of players
+        for player in self.players:
+            print(player.getName())
+        """
 
     def currentDifferenceInBets(self):
         diff = 0

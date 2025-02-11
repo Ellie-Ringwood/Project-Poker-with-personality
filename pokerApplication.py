@@ -58,63 +58,66 @@ def evaluateWinner():
 ##global attributes
 global table
 table = Table()
-playing = True
-hand = 0
+playingHand = True
 
 # begin game
-while playing:
+while playingHand:
     ## get list of players with funds
     table.getPlayersWithFunds()
     if (len(table.players) < 2):
         print("Not enough players with funds")
-        playing = False
+        playingHand = False
         break 
 
     for player in table.players:
         print(player.getName(),"has a balance of:", player.getBalance())
 
     ## begin hand
-    hand += 1
-    print("Hand",hand)
-    roundOfPlay = 1
-    handNotWon = True
-    winner = -1
+    table.hand += 1
+    print("\nHand",table.hand)
+    
     deck = Deck()
 
-    while handNotWon:
-        if roundOfPlay == 1:
+    while table.handNotWon:
+        if table.currentRound == 1:
             if table.players:
-                print("Round 1: Give blinds, get dealt a card, then bet")
+                print("Round 1: 1st player pays small blind (",table.blindAmount,"), second pays big blind (",table.blindAmount*2,"), get dealt a card, then bet")
                 # remove blind amount from player funds
-                for player in table.players: 
-                    player.removeBlind()
-                table.addCurrentBet(table.blindAmount)
+
+                for i in range(len(table.players)):
+                    table.players[i].removeBlind(i)
+
+                table.addCurrentBet(table.blindAmount*2)
 
                 # shuffle and deal 1 card to each player
                 deck.shuffleDeck()
+                """
+                ## can deal manually or with a for statement
                 table.players[0].receiveCard(deck.dealCard())
                 table.players[1].receiveCard(deck.dealCard())
-                #for i in range(len(table.players)):
-                #    table.players[i].receiveCard(deck.dealCard())
+                """
+                for i in range(len(table.players)):
+                    table.players[i].receiveCard(deck.dealCard())
 
                 # each player bets
-                handNotWon = betting()
+                table.handNotWon = betting()
                 
-                roundOfPlay += 1
-        elif (roundOfPlay == 2) and handNotWon == True:
+                table.currentRound += 1
+                
+        elif (table.currentRound == 2) and handNotWon == True:
             print("Round 2: Table gets dealt one community card, then bet")
             # shuffle and deal 1 community card to the table
             deck.shuffleDeck()
             table.recieveCommunityCard(deck.dealCard())
             ####then betting
             handNotWon = betting()
-            roundOfPlay += 1
-        elif (roundOfPlay > 2) and handNotWon == True:
+            table.currentRound += 1
+        elif (table.currentRound > 2) and handNotWon == True:
             print("\nEvaluation")
             ####same value as public card wins
             ####if neither same, highest wins
             handNotWon = False
-            
+        
     print("End of hand")
     ####award money here
     if len(table.players)  == 1:
@@ -125,9 +128,9 @@ while playing:
         table.endOfHand(evaluateWinner())
 
     ## check still playing
-    print("\npress e to exit, or anything else to continue:")
+    print("\npress e to exit, or enter to continue:")
     exit = str(input("")).upper()
     if exit == "E":
-        playing = False
+        playingHand = False
 
 print("End of game")
