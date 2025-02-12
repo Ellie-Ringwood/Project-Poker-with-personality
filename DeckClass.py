@@ -2,9 +2,9 @@ import random
 from CardClass import Card
 
 class Deck:
-    def __init__(self):
+    def __init__(self,suits):
         self.values = ["Jack","Queen","King"]
-        self.cards = self.makeDeck(2,self.values)
+        self.cards = self.makeDeck(suits,self.values)
         #print("deck constructed")
 
     def makeDeck(self, suits, values):

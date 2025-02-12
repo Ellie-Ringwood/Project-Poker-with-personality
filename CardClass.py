@@ -11,7 +11,7 @@ class Card:
         return self.name
 
     def __str__(self):
-        return f"{self.value}"
+        return f"{self.name}"
 
 
 

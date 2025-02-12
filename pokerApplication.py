@@ -76,7 +76,7 @@ while playingHand:
     table.hand += 1
     print("\nHand",table.hand)
     
-    deck = Deck()
+    deck = Deck(2)
 
     while table.handNotWon:
         if table.currentRound == 1:
