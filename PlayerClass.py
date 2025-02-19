@@ -8,6 +8,9 @@ class Player():
         self.resetHand()
         self.name = name
         self.actions = ["CHECK","CALL","RAISE","FOLD"]
+        self.canCall = False
+        self.canCheck = False
+        self.canRaise = False
         #print("player constructed")
 
     def resetHand(self):
@@ -111,24 +114,24 @@ class Player():
         diff = self.getDifference()
 
         print("\nEnter action from available actions:")
-        canCall = False
-        canCheck = False
-        canRaise = False
+        self.canCall = False
+        self.canCheck = False
+        self.canRaise = False
         if (self.amountBetThisRound < self.table.getCurrentBet()): ## if bets not equal, needs to call to get to same amount
             if (self.balance >= diff): ##if has enough funds to call
                 print(" - Call (",diff,")")
-                canCall = True
+                self.canCall = True
         else:
             print(" - Check")
-            canCheck = True
+            self.canCheck = True
         
         if (self.timesRaisedThisRound < self.table.maxRaisesEach): ## if not past max bets, can raise
             if(self.balance >= diff + self.table.raiseAmount):
                 print(" - Raise (",diff + self.table.raiseAmount,")")
-                canRaise = True
+                self.canRaise = True
 
         print(" - Fold")
-        action = self.getValidAction(canCheck, canCall, canRaise)
+        action = self.getValidAction(self.canCheck,self.canCall, self.canRaise)
 
         match action:
             case "CALL": # add to pot, matching check or raise

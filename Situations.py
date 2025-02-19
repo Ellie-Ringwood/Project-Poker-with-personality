@@ -8,13 +8,13 @@ class SituationGenerator():
 
         self.possibleCards = Deck(1).cards
         self.rounds = 2
-        #for card in self.possibleCards.cards:
-        #    print(card)
+        
         self.createSituations()
-        self.displayArray(self.situations)
-        self.findRepeats(self.situations)
+        #self.displayArray(self.situations)
+        #self.findRepeats(self.situations)
         self.createIntentions()
-        self.findRepeats(self.intentions)
+        #self.displayArray(self.intentions)
+        #self.findRepeats(self.intentions)
         
     def addSituation(self,roundNum, card, callCheckFund, canRaise, bluffBelief, communityCard):
         match communityCard:
@@ -23,29 +23,28 @@ class SituationGenerator():
             case 1:
                 communityCardStatus = "diff"
             case _:
-                communityCardStatus = "none"
+                communityCardStatus = "null"
                 
         if bluffBelief == -1:
-            bluffStatus = "none"
+            bluffStatus = "null"
         else:
             bluffStatus = bool(bluffBelief)
             
         if(callCheckFund == False) and (canRaise == False):
-            situation = ["any","any", bool(callCheckFund), bool(canRaise), "null","null"]
+            situation = ["any","any", bool(callCheckFund), bool(canRaise), "any","any"]
         else:
             situation = [roundNum, card.getName(), bool(callCheckFund), bool(canRaise), bluffStatus, communityCardStatus]
-            #situation = [card.getName(), bool(callCheckFund), bool(canRaise), bluffStatus, communityCardStatus]
         
         if (situation not in self.situations):
             self.situations.append(situation)
 
     def createSituations(self):
-        for roundNum in range(self.rounds):
+        for roundNum in range(1, self.rounds+1):
             for firstBetRound in range(0,2):
                 for card in self.possibleCards:
                     for enoughForCallCheck in range(0,2):
                         for canRaise in range(0,2):
-                            if roundNum == 0: ## if first round, no community card
+                            if roundNum == 1: ## if first round, no community card
                                 if firstBetRound == 0: # first bet so can't guess bluff
                                     self.addSituation(roundNum,card,enoughForCallCheck,canRaise,-1,-1)
                                 else:
@@ -74,9 +73,6 @@ class SituationGenerator():
             for action in possibleActions:
                 #print(situation, action)
                 self.intentions.append([situation, profileScores, outcomeScore, action]) 
-        self.displayArray(self.intentions)
-            #self.intention.append() 
-            #print(situation[1:], self.getPossibleActions(situation))
 
     def displayArray(self,array):
         print(len(array))
@@ -86,13 +82,6 @@ class SituationGenerator():
             
 
     def getPossibleActions(self, situation):
-        """
-        card = situation[0]
-        canCallCheck = situation[1]
-        canRaise = situation[2]
-        bluff = situation[3]
-        communityCard = situation[4]
-        """
         roundNum = situation[0]
         card = situation[1]
         canCallCheck = situation[2]
@@ -110,25 +99,28 @@ class SituationGenerator():
         return possibleActions
             
     def findIntentions(self, roundNum, cardName, callCheckFund, canRaise, bluffBelief, communityCard):
-        print("FIND")
+        if roundNum == 1:
+            communityCard = "null"
+        print("Round, card, call/check, raise, bluff, community")
         validIntentions = []
         for intention in self.intentions:
             situation = intention[0]
-            if (roundNum == situation[0])or(situation[0] == "any"):
-                if (cardName == situation[1])or(situation[1] == "any"):
+            if (roundNum == situation[0]) or (situation[0] == "any"):
+                if (cardName == situation[1]) or (situation[1] == "any"):
                     if (callCheckFund == situation[2]):
                         if(canRaise == situation[3]):
-                            if(bluffBelief == situation[4]) or (situation[4] == "none"):
-                                if(communityCard == situation[5]) or (situation[5] == "none"):
-                                    print(intention)
-                                    #validIntentions.append(situation)
-        #for intention in validIntentions:
-        #    print(valid)
+                            if(bluffBelief == situation[4]) or (situation[4] == "any"):
+                                if(communityCard == situation[5]) or (situation[5] == "any"):
+                                    validIntentions.append(intention)
+
+        for intention in validIntentions:
+            print(intention)
+
     
 
-s = SituationGenerator()
+#s = SituationGenerator()
 
-s.findIntentions(0,'Queen',True,True,False,-1)
+#s.findIntentions(0,'Queen',False,False,False,"none")
 
 
 
