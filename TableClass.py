@@ -6,11 +6,8 @@ from CardClass import Card
 class Table:
     def __init__(self):
         self.players = []
-        self.possiblePlayers = [Player(self,10,"Human"), Agent(self,10,"Agent"), Agent(self,0,"Floof")]
-        #self.firstPlayer = 0
-        
+        self.possiblePlayers = [Player(self,10,"Human"), Agent(self,10,"Agent")]
         self.resetTable()
-        
         self.blindAmount = 1
         self.maxRaisesEach = 2
         self.hand = 0
@@ -31,9 +28,7 @@ class Table:
         return self.communityCard
 
     def recieveCommunityCard(self,card):
-        print(card)
         self.communityCard = card
-        print("Community card is a",self.communityCard.getValue())
         print("Community card is a",self.communityCard.getName())
 
     def newRound(self):

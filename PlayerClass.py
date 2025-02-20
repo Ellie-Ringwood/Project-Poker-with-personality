@@ -7,7 +7,7 @@ class Player():
         self.balance = startingBalance
         self.resetHand()
         self.name = name
-        self.actions = ["CHECK","CALL","RAISE","FOLD"]
+        self.actions = ["check","call","raise","fold"]
         self.canCall = False
         self.canCheck = False
         self.canRaise = False
@@ -80,23 +80,24 @@ class Player():
     def getValidAction(self, canCheck, canCall, canRaise):
         while True:
             try:
-                action = str(input("")).upper()
+                action = str(input("")).lower()
             except:
                 print("Please enter a string")
                 continue
             if (action in self.actions):
-                if ((action == "CHECK")and(canCheck == False)):
+                if ((action == "check")and(canCheck == False)):
                     print("You cannot check currently, enter valid action:")
                     continue
-                elif((action == "CALL")and(canCall == False)):
+                elif((action == "call")and(canCall == False)):
                     print("You cannot call currently, enter valid action:")
                     continue
-                elif((action == "RAISE")and(canRaise == False)):
+                elif((action == "raise")and(canRaise == False)):
                     print("You cannot raise as maximum raises per player is",self.table.addToPotmaxRaisesEach,", enter valid action:")
                     continue
                 else:
                     break
             else:
+                print(action)
                 print("Please enter valid action")
         return action
 
@@ -134,13 +135,13 @@ class Player():
         action = self.getValidAction(self.canCheck,self.canCall, self.canRaise)
 
         match action:
-            case "CALL": # add to pot, matching check or raise
+            case "call": # add to pot, matching check or raise
                 self.removeFunds(diff)
-            case "RAISE": # raise by raise amount + any difference to previous player
+            case "raise": # raise by raise amount + any difference to previous player
                 self.removeFunds(diff + self.table.raiseAmount)
                 self.table.addCurrentBet(self.table.raiseAmount)
                 self.timesRaisedThisRound += 1
-            case "FOLD": # if everyone but one player folds, they automatically win the hand
+            case "fold": # if everyone but one player folds, they automatically win the hand
                 self.folded = True
                 self.table.playerFolds(self)
         ## CHECK = no adding to pot, matching previous bet - e.g. just using blinds

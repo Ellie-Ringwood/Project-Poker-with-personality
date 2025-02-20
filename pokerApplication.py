@@ -104,19 +104,19 @@ while playingHand:
                 
                 table.currentRound += 1
                 
-        elif (table.currentRound == 2) and handNotWon == True:
-            print("Round 2: Table gets dealt one community card, then bet")
+        elif (table.currentRound == 2) and table.handNotWon == True:
+            print("\n----------------\nRound 2: Table gets dealt one community card, then bet")
             # shuffle and deal 1 community card to the table
             deck.shuffleDeck()
             table.recieveCommunityCard(deck.dealCard())
             ####then betting
-            handNotWon = betting()
+            table.handNotWon = betting()
             table.currentRound += 1
-        elif (table.currentRound > 2) and handNotWon == True:
+        elif (table.currentRound > 2) and table.handNotWon == True:
             print("\nEvaluation")
             ####same value as public card wins
             ####if neither same, highest wins
-            handNotWon = False
+            table.handNotWon = False
         
     print("End of hand")
     ####award money here

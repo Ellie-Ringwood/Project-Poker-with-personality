@@ -1,10 +1,13 @@
 from PlayerClass import Player
 from Situations import SituationGenerator
+import time
+import random
 
 class Agent(Player):
     def __init__(self,table, startingBalance, name):
-        super(). __init__(table, startingBalance, name)
-        s = SituationGenerator()
+        super().__init__(table, startingBalance, name)
+        self.intentionClass = SituationGenerator()
+        self.intentionClass.setFromFile()
         self.canCall = False
         self.canCheck = False
         self.canRaise = False
@@ -14,7 +17,11 @@ class Agent(Player):
 
     def chooseAction(self, canCheck, canCall, canRaise):
         self.getIntention(canCheck, canCall, canRaise)
-        return "FOLD"
+        print("Waiting for agent decision", end="", flush = True)
+        for i in range( random.randint(3, 9)):
+            print(".", end="")
+            time.sleep(1)
+        return "check/call"
 
     def bet(self):
         print("")
@@ -46,25 +53,33 @@ class Agent(Player):
         action = self.chooseAction(self.canCheck, self.canCall, self.canRaise)
 
         match action:
-            case "CALL": # add to pot, matching check or raise
+            case "call": # add to pot, matching check or raise
                 self.removeFunds(diff)
-            case "RAISE": # raise by raise amount + any difference to previous player
+            case "check/call":
+                if self.canCall == True:
+                    self.removeFunds(diff)
+                    action = "call"
+                else:
+                    action = "check"
+            case "raise": # raise by raise amount + any difference to previous player
                 self.removeFunds(diff + self.table.raiseAmount)
                 self.table.addCurrentBet(self.table.raiseAmount)
                 self.timesRaisedThisRound += 1
-            case "FOLD": # if everyone but one player folds, they automatically win the hand
+            case "fold": # if everyone but one player folds, they automatically win the hand
                 self.folded = True
                 self.table.playerFolds(self)
 
+        print("Agent performed",action,"action\n")
+
     def getIntention(self,canCheck, canCall, canRaise):
-        s = SituationGenerator()
         canCallOrCheck = canCheck or canCall
         
-        moneyThreshold = 
-        
+        #moneyThreshold = 
+        for i in self.intentionClass.intentions:
+            print(i)
 
         print("should be:",self.table.currentRound,self.currentCard,canCallOrCheck,canRaise,"null",self.table.communityCard.getName())
-        intentions = s.findIntentions(self.table.currentRound,self.currentCard.getName(),canCallOrCheck,canRaise,"null",self.table.communityCard.getName())
+        intentions = self.intentionClass.findIntentions(self.table.currentRound,self.currentCard.getName(),canCallOrCheck,canRaise,"null",self.table.communityCard.getName())
 
         # check closest profile score - agressiveness/looseness
         # check outcome against fund threshold - tight/loose

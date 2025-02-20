@@ -5,16 +5,30 @@ class SituationGenerator():
     def __init__(self):
         self.situations = []
         self.intentions = []        
-
         self.possibleCards = Deck(1).cards
         self.rounds = 2
-        
-        self.createSituations()
-        #self.displayArray(self.situations)
-        #self.findRepeats(self.situations)
-        self.createIntentions()
+
+    def setFromFile(self):
+        print("set from file")
+        if self.intentions == []:
+            f = open("Intentions.txt", "r")
+            for line in f:
+                line = line.strip()
+                for word in line.strip('[]').split(','):
+                    print(word)
+                
+                self.intentions.append(line.strip())
         #self.displayArray(self.intentions)
-        #self.findRepeats(self.intentions)
+
+    def setToFile(self):
+        self.createSituations()
+        self.findRepeats(self.situations)
+        self.createIntentions()
+        self.findRepeats(self.intentions)
+        f = open("Intentions.txt", "w")
+        for intention in self.intentions:
+            f.write(f"{intention}\n")
+        f.close()
         
     def addSituation(self,roundNum, card, callCheckFund, canRaise, bluffBelief, communityCard):
         match communityCard:
@@ -71,15 +85,13 @@ class SituationGenerator():
         for situation in self.situations:
             possibleActions = self.getPossibleActions(situation)
             for action in possibleActions:
-                #print(situation, action)
                 self.intentions.append([situation, profileScores, outcomeScore, action]) 
 
     def displayArray(self,array):
         print(len(array))
-        #print("Round, card, call/check, raise, bluff, community")
+        print("Round, card, call/check, raise, bluff, community")
         for element in array:
             print(element)
-            
 
     def getPossibleActions(self, situation):
         roundNum = situation[0]
@@ -103,24 +115,26 @@ class SituationGenerator():
             communityCard = "null"
         print("Round, card, call/check, raise, bluff, community")
         validIntentions = []
+        
         for intention in self.intentions:
             situation = intention[0]
+            print(situation)
             if (roundNum == situation[0]) or (situation[0] == "any"):
+                print("round")
                 if (cardName == situation[1]) or (situation[1] == "any"):
                     if (callCheckFund == situation[2]):
                         if(canRaise == situation[3]):
                             if(bluffBelief == situation[4]) or (situation[4] == "any"):
+                                print("bluff")
                                 if(communityCard == situation[5]) or (situation[5] == "any"):
                                     validIntentions.append(intention)
 
         for intention in validIntentions:
-            print(intention)
-
-    
+            print(intention)   
 
 #s = SituationGenerator()
-
-#s.findIntentions(0,'Queen',False,False,False,"none")
+#s.setToFile()
+#s.setFromFile()
 
 
 
