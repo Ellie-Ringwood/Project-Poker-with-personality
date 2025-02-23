@@ -16,12 +16,14 @@ class Agent(Player):
         self.profile = {"tight/loose": 0.1, "agressive/passive": 0.9} # values between 0 and 1 on scale
 
     def chooseAction(self, canCheck, canCall, canRaise):
-        self.getIntention(canCheck, canCall, canRaise)
+        intentions = self.getIntention(canCheck, canCall, canRaise)
         print("Waiting for agent decision", end="", flush = True)
-        for i in range( random.randint(3, 9)):
+        for i in range(random.randint(4,10)):
             print(".", end="")
-            time.sleep(1)
-        return "check/call"
+            time.sleep(0.5)
+        
+        rand = random.randint(0,len(intentions)-1)
+        return intentions[rand][2]
 
     def bet(self):
         print("")
@@ -50,7 +52,9 @@ class Agent(Player):
                 self.canRaise = True
 
         print(" - Fold")
+        
         action = self.chooseAction(self.canCheck, self.canCall, self.canRaise)
+        print("Agent performed",action,"action\n")
 
         match action:
             case "call": # add to pot, matching check or raise
@@ -69,21 +73,27 @@ class Agent(Player):
                 self.folded = True
                 self.table.playerFolds(self)
 
-        print("Agent performed",action,"action\n")
-
     def getIntention(self,canCheck, canCall, canRaise):
         canCallOrCheck = canCheck or canCall
         
-        #moneyThreshold = 
-        for i in self.intentionClass.intentions:
-            print(i)
+        bluff = self.predictBluff()
 
-        print("should be:",self.table.currentRound,self.currentCard,canCallOrCheck,canRaise,"null",self.table.communityCard.getName())
-        intentions = self.intentionClass.findIntentions(self.table.currentRound,self.currentCard.getName(),canCallOrCheck,canRaise,"null",self.table.communityCard.getName())
+        community = "diff"
+        if self.table.communityCard.getName() == self.currentCard.getName():
+            community = "same"
+        elif self.table.communityCard.getName() == "null":
+            community = "null"
+        #moneyThreshold = 
+        #print("Should:",self.table.currentRound,self.currentCard.getName(),canCallOrCheck,canRaise,bluff,community)
+        return self.intentionClass.findIntentions(self.table.currentRound,self.currentCard.getName(),canCallOrCheck,canRaise,bluff,community)
+        
 
         # check closest profile score - agressiveness/looseness
         # check outcome against fund threshold - tight/loose
         # pick best based on closest profile, and outcome
+
+    def predictBluff(self):
+        return "null"
         
 
 

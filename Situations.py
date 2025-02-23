@@ -1,5 +1,7 @@
 from abc import ABCMeta
+from http.client import PARTIAL_CONTENT
 from DeckClass import Deck
+import csv
 
 class SituationGenerator():
     def __init__(self):
@@ -7,17 +9,58 @@ class SituationGenerator():
         self.intentions = []        
         self.possibleCards = Deck(1).cards
         self.rounds = 2
+        
+    def stringArrayToTypeArray(self, array):
+        typeArray = []
+        for string in array:
+            string = string.strip("' '")
+            try:
+                correct = int(string)
+                #print("int:", correct)
+            except ValueError:
+                if string == "True":
+                    correct = True
+                    #print("bool:",correct)
+                elif string == "False":
+                   correct = False
+                   #print("bool:",correct)
+                else:
+                   correct = string
+                   #print("string:", string)
+            typeArray.append(correct)
+        if len(typeArray) == 1:
+            return typeArray[0]
+        else:
+            return typeArray
 
     def setFromFile(self):
-        print("set from file")
         if self.intentions == []:
             f = open("Intentions.txt", "r")
             for line in f:
                 line = line.strip()
-                for word in line.strip('[]').split(','):
-                    print(word)
-                
-                self.intentions.append(line.strip())
+                intention = []
+                scores = []
+                count = 0
+                for word in line.split('],'):
+                    word = word.strip()
+                    word = word.strip("]")
+                    found = False
+                    for i in range(len(word)):
+                        if word[i] != "[" and not found:
+                            array = word[i:].split(",")
+                            found = True
+                            match count:
+                                case 0:
+                                    intention.append(self.stringArrayToTypeArray(array))
+                                case 1:
+                                    scores.append(self.stringArrayToTypeArray(array))
+                                case 2:
+                                    scores.append(self.stringArrayToTypeArray(array))
+                                    intention.append(scores)
+                                case 3:
+                                    intention.append(self.stringArrayToTypeArray(array))
+                            count += 1
+                self.intentions.append(intention)
         #self.displayArray(self.intentions)
 
     def setToFile(self):
@@ -75,7 +118,7 @@ class SituationGenerator():
     def findRepeats(self, array):
         newArray = []
         for element in array:
-            if (element not in newArray):
+            if element not in newArray:
                 newArray.append(element)
         print(len(array)-len(newArray),"repeated elements")
 
@@ -85,7 +128,7 @@ class SituationGenerator():
         for situation in self.situations:
             possibleActions = self.getPossibleActions(situation)
             for action in possibleActions:
-                self.intentions.append([situation, profileScores, outcomeScore, action]) 
+                self.intentions.append([situation, [profileScores, outcomeScore], action]) 
 
     def displayArray(self,array):
         print(len(array))
@@ -118,19 +161,19 @@ class SituationGenerator():
         
         for intention in self.intentions:
             situation = intention[0]
-            print(situation)
+            
             if (roundNum == situation[0]) or (situation[0] == "any"):
-                print("round")
                 if (cardName == situation[1]) or (situation[1] == "any"):
                     if (callCheckFund == situation[2]):
                         if(canRaise == situation[3]):
                             if(bluffBelief == situation[4]) or (situation[4] == "any"):
-                                print("bluff")
                                 if(communityCard == situation[5]) or (situation[5] == "any"):
                                     validIntentions.append(intention)
+                                    
 
-        for intention in validIntentions:
-            print(intention)   
+        #for intention in validIntentions:
+        #    print(intention)
+        return validIntentions
 
 #s = SituationGenerator()
 #s.setToFile()
