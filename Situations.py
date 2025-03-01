@@ -87,8 +87,8 @@ class SituationGenerator():
         else:
             bluffStatus = bool(bluffBelief)
             
-        if(callCheckFund == False) and (canRaise == False):
-            situation = ["any","any", bool(callCheckFund), bool(canRaise), "any","any"]
+        if(callCheckFund == False):
+            situation = ["any","any", bool(callCheckFund), "any", "any","any"]
         else:
             situation = [roundNum, card.getName(), bool(callCheckFund), bool(canRaise), bluffStatus, communityCardStatus]
         
@@ -146,7 +146,7 @@ class SituationGenerator():
         
         possibleActions = []
         
-        if canRaise:
+        if canRaise and canCallCheck == True:
             possibleActions.append("raise")
         if canCallCheck:
             possibleActions.append("call/check")
@@ -165,7 +165,7 @@ class SituationGenerator():
             if (roundNum == situation[0]) or (situation[0] == "any"):
                 if (cardName == situation[1]) or (situation[1] == "any"):
                     if (callCheckFund == situation[2]):
-                        if(canRaise == situation[3]):
+                        if(canRaise == situation[3]) or (situation[3] == "any"):
                             if(bluffBelief == situation[4]) or (situation[4] == "any"):
                                 if(communityCard == situation[5]) or (situation[5] == "any"):
                                     validIntentions.append(intention)
@@ -175,8 +175,10 @@ class SituationGenerator():
         #    print(intention)
         return validIntentions
 
-#s = SituationGenerator()
-#s.setToFile()
+s = SituationGenerator()
+s.setToFile()
+print(len(s.situations))
+print(len(s.intentions))
 #s.setFromFile()
 
 
