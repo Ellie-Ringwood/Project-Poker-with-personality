@@ -123,12 +123,13 @@ class SituationGenerator():
         print(len(array)-len(newArray),"repeated elements")
 
     def createIntentions(self):
-        profileScores = [0,0]
-        outcomeScore = 0
+        profileScores = [0,0,0,0]
+        #outcomeScore = 0
         for situation in self.situations:
             possibleActions = self.getPossibleActions(situation)
             for action in possibleActions:
-                self.intentions.append([situation, [profileScores, outcomeScore], action]) 
+                self.intentions.append([situation, profileScores, action]) 
+                #self.intentions.append([situation, [profileScores, outcomeScore], action]) 
 
     def displayArray(self,array):
         print(len(array))
