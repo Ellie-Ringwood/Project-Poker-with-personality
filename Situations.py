@@ -39,7 +39,6 @@ class SituationGenerator():
             for line in f:
                 line = line.strip()
                 intention = []
-                scores = []
                 count = 0
                 for word in line.split('],'):
                     word = word.strip()
@@ -53,11 +52,8 @@ class SituationGenerator():
                                 case 0:
                                     intention.append(self.stringArrayToTypeArray(array))
                                 case 1:
-                                    scores.append(self.stringArrayToTypeArray(array))
+                                    intention.append(self.stringArrayToTypeArray(array))
                                 case 2:
-                                    scores.append(self.stringArrayToTypeArray(array))
-                                    intention.append(scores)
-                                case 3:
                                     intention.append(self.stringArrayToTypeArray(array))
                             count += 1
                 self.intentions.append(intention)
@@ -172,15 +168,16 @@ class SituationGenerator():
                                     validIntentions.append(intention)
                                     
 
-        #for intention in validIntentions:
-        #    print(intention)
+        for intention in validIntentions:
+            print(intention)
         return validIntentions
 
+"""
 s = SituationGenerator()
-s.setToFile()
+#s.setToFile()
 print(len(s.situations))
 print(len(s.intentions))
-#s.setFromFile()
-
+s.setFromFile()
+"""
 
 

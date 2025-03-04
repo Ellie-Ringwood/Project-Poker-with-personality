@@ -11,19 +11,40 @@ class Agent(Player):
         self.canCall = False
         self.canCheck = False
         self.canRaise = False
+
+        self.profiles = ["AT", "PT", "AL", "PL"] ## Aggressive-Tight, Passive-Tight, Aggressive-Loose, Passive-Loose
+        self.targetActionRatios = [[0.9, 0.6, 0.4, 0.5],[0.6, 0.5, 0.1, 0.7],[0.6, 0.8, 0.7, 0.2],[0.6, 0.9, 0.6, 0.4]] #check-call-raise-fold ratios for each profile
+        
+        self.profile = "AT"
+        self.targetActionRatio = []
+        for i in range(len(self.profiles)):
+            if self.profile == self.profiles[i]:
+                self.targetActionRatio = self.targetActionRatios[i]
+        
+        self.currentActionRatio = {"Check": 0,"Call":0, "Raise":0, "Fold":0}
+        print(self.targetActionRatio)
         #print("bot constructed")
-        #self.threshhold = 0
-        self.profile = {"tight/loose": 0.1, "agressive/passive": 0.9} # values between 0 and 1 on scale
 
     def chooseAction(self, canCheck, canCall, canRaise):
-        intentions = self.getIntention(canCheck, canCall, canRaise)
+        intentions = self.getIntentions(canCheck, canCall, canRaise)
+        
+        #get scores for profile
+        
+        # check closest profile score - agressiveness/looseness
+        # check outcome against fund threshold - tight/loose
+        # pick best based on closest profile, and outcome
+        
+        rand = random.randint(0,len(intentions)-1)
+        chosenIntention = intentions[rand]
+        print(chosenIntention)
+        action = chosenIntention[2]
+
         print("Waiting for agent decision", end="", flush = True)
         for i in range(random.randint(4,10)):
             print(".", end="")
             time.sleep(0.5)
-        
-        rand = random.randint(0,len(intentions)-1)
-        return intentions[rand][2]
+
+        return action
 
     def bet(self):
         print("")
@@ -73,7 +94,7 @@ class Agent(Player):
                 self.folded = True
                 self.table.playerFolds(self)
 
-    def getIntention(self,canCheck, canCall, canRaise):
+    def getIntentions(self,canCheck, canCall, canRaise):
         canCallOrCheck = canCheck or canCall
         
         bluff = self.predictBluff()
@@ -83,14 +104,10 @@ class Agent(Player):
             community = "same"
         elif self.table.communityCard.getName() == "null":
             community = "null"
-        #moneyThreshold = 
-        #print("Should:",self.table.currentRound,self.currentCard.getName(),canCallOrCheck,canRaise,bluff,community)
-        return self.intentionClass.findIntentions(self.table.currentRound,self.currentCard.getName(),canCallOrCheck,canRaise,bluff,community)
-        
 
-        # check closest profile score - agressiveness/looseness
-        # check outcome against fund threshold - tight/loose
-        # pick best based on closest profile, and outcome
+        #print("Should:",self.table.currentRound,self.currentCard.getName(),canCallOrCheck,canRaise,bluff,community)
+        intentions = self.intentionClass.findIntentions(self.table.currentRound,self.currentCard.getName(),canCallOrCheck,canRaise,bluff,community)
+        return intentions
 
     def predictBluff(self):
         return "null"
