@@ -5,7 +5,7 @@ from CardClass import Card
 
 class Table:
     def __init__(self):
-        self.players = []
+        
         self.possiblePlayers = [Player(self,10,"Human"), Agent(self,10,"Agent")]
         self.resetTable()
         self.blindAmount = 1
@@ -15,6 +15,7 @@ class Table:
         #print("table constructed") 
 
     def resetTable(self):
+        self.players = []
         self.currentRound = 1
         self.handNotWon = True
         self.winner = -1
@@ -32,7 +33,7 @@ class Table:
         print("Community card is a",self.communityCard.getName())
 
     def newRound(self):
-         self.raiseAmount =2 * self.current_round
+         self.raiseAmount = 2 * self.current_round
 
     def addToPot(self, amount):
         self.pot += amount
@@ -79,20 +80,81 @@ class Table:
             print(player.getName())
         """
 
+    def betting(self): ##returns is hand is won yet or not
+        stillBetting = True
+        i = 0
+        while stillBetting:
+            if (self.currentDifferenceInBets() != 0) or i == 0:
+                for player in self.players:
+                    if (player.folded == False) and (self.continueBetting == True):
+                        player.bet()
+                    if (self.continueBetting == False):
+                        stillBetting == False
+                        return False
+            if (self.currentDifferenceInBets() == 0):
+                stillBetting = False
+            i += 1
+        return True
+
     def currentDifferenceInBets(self):
         diff = 0
         for player in self.players:
             diff += player.getDifference()
         return diff
 
-    def endOfHand(self, winnerIndexes):
+    def evaluateWinner(self):
+        winnerIndexes = []
+        if len(self.players) == 1:
+            print("1 unfolded player left")
+            winnerIndexes = [0]
+        else:
+            print("multiple unfolded players left")
+        
+            for i in range(len(self.players)):
+                if self.players[i].getCurrentCard().getValue() == self.getCommunityCard().getValue():
+                    print("same card to win,", self.players[i].name)
+                    winnerIndexes = [i]
+                    
+            if winnerIndexes == []: ## if the crad is no the same for any of the players
+                playerCardValues = []
+                for i in range(len(self.players)):
+                    card = self.players[i].getCurrentCard().getValue()
+                    playerCardValues.append(card)
+
+                for card in playerValues:
+                    print(card)
+                    if card == self.getCommunityCard().getValue():
+                        winnerIndexes = [i]
+                        return winnerIndexes
+
+                maxValue = -1
+                for i in range(len(playerCardValues)):
+                    if playerCardValues[i] > maxValue:
+                        winnerIndexes = [i]
+                        maxValue = playerCardValues[i]
+                    elif playerCardValues[i] == maxValue:
+                        winnerIndexes.append(i)
+                        
+        print(winnerIndexes)
+        print()
+        
+        self.awardWinnings(winnerIndexes)
+    
+    def awardWinnings(self, winnerIndexes):
         len(winnerIndexes) 
         if len(winnerIndexes) == 1:
-            self.players[winnerIndexes[0]].addFunds(self.getPot())
+            winner = self.players[winnerIndexes[0]]
+            print("The winner is",winner.getName(), "with a", winner.getCurrentCard().getName())
+            winner.addFunds(self.getPot())
         else:
-            for playerIndex in winnerIndexes:
-                self.players[playerIndex].addFunds(self.getPot()//len(winnerIndexes))
-        for player in self.players:
+            print("there were multiple winners, thew pot is split between ", end="", flush = True)
+            for i in range(len(winnerIndexes)):
+                print(self.players[winnerIndexes[i]].getName(), end="", flush = True)
+                if i != len(winnerIndexes)-1:
+                    print("and", end="", flush = True)
+                self.players[winnerIndexes[i]].addFunds(self.getPot()//len(winnerIndexes))
+            print("")
+        for player in self.possiblePlayers:
             player.resetHand()
         self.resetTable()
 

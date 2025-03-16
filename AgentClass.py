@@ -1,5 +1,6 @@
 from PlayerClass import Player
 from Situations import SituationGenerator
+from CardClass import Card
 import time
 import random
 
@@ -8,6 +9,7 @@ class Agent(Player):
         super().__init__(table, startingBalance, name)
         self.intentionClass = SituationGenerator()
         self.intentionClass.setFromFile()
+        #self.resetHand()
         self.canCall = False
         self.canCheck = False
         self.canRaise = False
@@ -22,17 +24,22 @@ class Agent(Player):
                 self.targetActionRatio = self.targetActionRatios[i]
         
         self.currentActionRatio = {"Check": 0,"Call":0, "Raise":0, "Fold":0}
+        self.ActionCount = {"Check": 0,"Call":0, "Raise":0, "Fold":0}
+        self.AllActionCount = 0
         print(self.targetActionRatio)
         #print("bot constructed")
 
     def chooseAction(self, canCheck, canCall, canRaise):
         intentions = self.getIntentions(canCheck, canCall, canRaise)
         
-        #get scores for profile
+        # get score for this profile from each intention
+
+
+
+        # get preference to action based on action ratios
+
         
-        # check closest profile score - agressiveness/looseness
-        # check outcome against fund threshold - tight/loose
-        # pick best based on closest profile, and outcome
+        
         
         rand = random.randint(0,len(intentions)-1)
         chosenIntention = intentions[rand]
@@ -45,6 +52,8 @@ class Agent(Player):
             time.sleep(0.5)
 
         return action
+    
+    ##def increaseActionCount
 
     def bet(self):
         print("")

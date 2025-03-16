@@ -3,56 +3,6 @@ from CardClass import Card
 from DeckClass import Deck
 from TableClass import Table
 from PlayerClass import Player
-        
-## global functions
-"""def getPreviousPlayerIndex(index):
-    previousPlayer = index - 1
-    if (previousPlayer < 0):
-        previousPlayer = len(players) -1
-    return previousPlayer"""
-
-def betting(): ##returns is hand is won yet or not
-    stillBetting = True
-    i = 0
-    while stillBetting:
-        if (table.currentDifferenceInBets() != 0) or i == 0:
-            for player in table.players:
-                if (player.folded == False) and (table.continueBetting == True):
-                    player.bet()
-                if (table.continueBetting == False):
-                    stillBetting == False
-                    return False
-        if (table.currentDifferenceInBets() == 0):
-            stillBetting = False
-        i += 1
-    return True
-
-def evaluateWinner():
-    winnerIndexes = []
-
-    for i in range(len(table.players)):
-        if table.players[i].getCurrentCard().getValue() == table.getCommunityCard().getValue():
-            winnerIndexes = [i]
-
-    playerValues = []
-    for i in range(len(table.players)):
-        card = table.players[i].getCurrentCard().getValue()
-        playerValues.append(card)
-
-    for card in playerValues:
-        if card == table.getCommunityCard().getValue():
-            winnerIndexes = [i]
-            return winnerIndexes
-
-    maxValue = -1
-    for i in range(len(playerValues)):
-        if playerValues[i] > maxValue:
-            winnerIndexes = [i]
-            maxValue = playerValues[i]
-        elif playerValues[i] == maxValue:
-            winnerIndexes.append(i)
-        
-    return winnerIndexes
 
 ############################################ main code ############################################
 ##global attributes
@@ -62,7 +12,9 @@ playingHand = True
 
 # begin game
 while playingHand:
+
     ## get list of players with funds
+    print("starting new hand")
     table.getPlayersWithFunds()
     if (len(table.players) < 2):
         print("Not enough players with funds")
@@ -76,6 +28,7 @@ while playingHand:
     table.hand += 1
     print("\nHand",table.hand)
     
+    
     deck = Deck(2)
 
     while table.handNotWon:
@@ -83,6 +36,8 @@ while playingHand:
             if table.players:
                 print("Round 1: 1st player pays small blind (",table.blindAmount,"), second pays big blind (",table.blindAmount*2,"), get dealt a card, then bet")
                 # remove blind amount from player funds
+
+                #print("lenght of players:", len(table.players))
 
                 for i in range(len(table.players)):
                     table.players[i].removeBlind(i)
@@ -100,7 +55,7 @@ while playingHand:
                     table.players[i].receiveCard(deck.dealCard())
 
                 # each player bets
-                table.handNotWon = betting()
+                table.handNotWon = table.betting()
                 
                 table.currentRound += 1
                 
@@ -110,22 +65,18 @@ while playingHand:
             deck.shuffleDeck()
             table.recieveCommunityCard(deck.dealCard())
             ####then betting
-            table.handNotWon = betting()
+            table.handNotWon = table.betting()
             table.currentRound += 1
         elif (table.currentRound > 2) and table.handNotWon == True:
             print("\nEvaluation")
-            ####same value as public card wins
-            ####if neither same, highest wins
+            
             table.handNotWon = False
-        
-    print("End of hand")
+    
+    ####same value as public card wins
+    ####if neither same, highest wins
     ####award money here
-    if len(table.players)  == 1:
-        #print("1 unfolded player left")
-        table.endOfHand([0])
-    else:
-        #print("multiple unfolded players left")
-        table.endOfHand(evaluateWinner())
+    table.evaluateWinner()
+    print("End of hand")
 
     ## check still playing
     print("\npress e to exit, or enter to continue:")
