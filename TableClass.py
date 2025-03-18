@@ -105,27 +105,18 @@ class Table:
     def evaluateWinner(self):
         winnerIndexes = []
         if len(self.players) == 1:
-            print("1 unfolded player left")
+            #print("1 unfolded player left")
             winnerIndexes = [0]
         else:
-            print("multiple unfolded players left")
-        
             for i in range(len(self.players)):
                 if self.players[i].getCurrentCard().getValue() == self.getCommunityCard().getValue():
-                    print("same card to win,", self.players[i].name)
                     winnerIndexes = [i]
                     
-            if winnerIndexes == []: ## if the crad is no the same for any of the players
+            if winnerIndexes == []: ## if the card is no the same for any of the players
                 playerCardValues = []
                 for i in range(len(self.players)):
                     card = self.players[i].getCurrentCard().getValue()
                     playerCardValues.append(card)
-
-                for card in playerValues:
-                    print(card)
-                    if card == self.getCommunityCard().getValue():
-                        winnerIndexes = [i]
-                        return winnerIndexes
 
                 maxValue = -1
                 for i in range(len(playerCardValues)):
@@ -134,24 +125,21 @@ class Table:
                         maxValue = playerCardValues[i]
                     elif playerCardValues[i] == maxValue:
                         winnerIndexes.append(i)
-                        
-        print(winnerIndexes)
-        print()
-        
+
         self.awardWinnings(winnerIndexes)
     
     def awardWinnings(self, winnerIndexes):
         len(winnerIndexes) 
         if len(winnerIndexes) == 1:
             winner = self.players[winnerIndexes[0]]
-            print("The winner is",winner.getName(), "with a", winner.getCurrentCard().getName())
+            print("\nThe winner is",winner.getName(), "with a", winner.getCurrentCard().getName())
             winner.addFunds(self.getPot())
         else:
-            print("there were multiple winners, thew pot is split between ", end="", flush = True)
+            print("\nThere is multiple winners, the pot is split between ", end="", flush = True)
             for i in range(len(winnerIndexes)):
                 print(self.players[winnerIndexes[i]].getName(), end="", flush = True)
                 if i != len(winnerIndexes)-1:
-                    print("and", end="", flush = True)
+                    print(" and ", end="", flush = True)
                 self.players[winnerIndexes[i]].addFunds(self.getPot()//len(winnerIndexes))
             print("")
         for player in self.possiblePlayers:

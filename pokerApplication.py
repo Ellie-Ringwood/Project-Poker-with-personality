@@ -46,13 +46,13 @@ while playingHand:
 
                 # shuffle and deal 1 card to each player
                 deck.shuffleDeck()
-                """
+                
                 ## can deal manually or with a for statement
-                table.players[0].receiveCard(deck.dealCard())
-                table.players[1].receiveCard(deck.dealCard())
-                """
-                for i in range(len(table.players)):
-                    table.players[i].receiveCard(deck.dealCard())
+                table.players[0].receiveCard(deck.dealSpecificCard("Queen"))
+                table.players[1].receiveCard(deck.dealSpecificCard("Queen"))
+                
+                #for i in range(len(table.players)):
+                #    table.players[i].receiveCard(deck.dealCard())
 
                 # each player bets
                 table.handNotWon = table.betting()
@@ -76,12 +76,12 @@ while playingHand:
     ####if neither same, highest wins
     ####award money here
     table.evaluateWinner()
-    print("End of hand")
 
     ## check still playing
-    print("\npress e to exit, or enter to continue:")
+    print("\nWould you like to play another hand?")
+    print("Press e to exit, or press enter to play new hand")
     exit = str(input("")).upper()
     if exit == "E":
         playingHand = False
 
-print("End of game")
+print("Exitting application")

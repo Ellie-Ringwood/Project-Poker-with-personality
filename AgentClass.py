@@ -14,10 +14,10 @@ class Agent(Player):
         self.canCheck = False
         self.canRaise = False
 
-        self.profiles = ["AT", "PT", "AL", "PL"] ## Aggressive-Tight, Passive-Tight, Aggressive-Loose, Passive-Loose
+        self.profiles = ["TA", "TP", "LA", "LP"]
         self.targetActionRatios = [[0.9, 0.6, 0.4, 0.5],[0.6, 0.5, 0.1, 0.7],[0.6, 0.8, 0.7, 0.2],[0.6, 0.9, 0.6, 0.4]] #check-call-raise-fold ratios for each profile
         
-        self.profile = "AT"
+        self.profile = "TA"
         self.targetActionRatio = []
         for i in range(len(self.profiles)):
             if self.profile == self.profiles[i]:
@@ -40,11 +40,13 @@ class Agent(Player):
 
         
         
-        
+        """
+        #pick random intention
         rand = random.randint(0,len(intentions)-1)
         chosenIntention = intentions[rand]
-        print(chosenIntention)
+        #print(chosenIntention)
         action = chosenIntention[2]
+        """
 
         print("Waiting for agent decision", end="", flush = True)
         for i in range(random.randint(4,10)):
