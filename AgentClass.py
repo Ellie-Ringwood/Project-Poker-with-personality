@@ -3,6 +3,7 @@ from Situations import SituationGenerator
 from CardClass import Card
 import time
 import random
+import copy
 
 class Agent(Player):
     def __init__(self,table, startingBalance, name):
@@ -15,16 +16,19 @@ class Agent(Player):
         self.canRaise = False
 
         self.profiles = self.intentionClass.scoreOrder
-        self.targetActionRatios = [[0.9, 0.6, 0.4, 0.5],[0.6, 0.5, 0.1, 0.7],[0.6, 0.8, 0.7, 0.2],[0.6, 0.9, 0.6, 0.4]] #check-call-raise-fold ratios for each profile
+        #self.targetActionRatios = [[0.9, 0.6, 0.4, 0.5],[0.6, 0.5, 0.1, 0.7],[0.6, 0.8, 0.7, 0.2],[0.6, 0.9, 0.6, 0.4]] #check-call-raise-fold ratios for each profile
+        self.targetActionRatios = [{"check":0.9,"call":0.6, "raise":0.4, "fold":0.5},
+                                   {"check":0.6,"call":0.5, "raise":0.1, "fold":0.7},
+                                   {"check":0.6,"call":0.8, "raise":0.7, "fold":0.2},
+                                   {"check":0.6,"call":0.9, "raise":0.6, "fold":0.4}] #check-call-raise-fold ratios for each profile
         
         self.profile = "TA"
-        self.targetActionRatio = []
+        self.targetActionRatio = {"check":0,"call":0, "raise":0, "fold":0}
         for i in range(len(self.profiles)):
             if self.profile == self.profiles[i]:
                 self.targetActionRatio = self.targetActionRatios[i]
         
         self.emptyActionDict = {"check":0,"call":0, "raise":0, "fold":0}
-        self.currentActionRatio = self.emptyActionDict
         self.actionCount = self.emptyActionDict
         self.totalActionCount = 0
         print(self.targetActionRatio)
@@ -47,8 +51,59 @@ class Agent(Player):
 
         # get preference to action based on action ratios
         
+        actionRatios = []
         for intention in intentions:
-            tempActionRatio = self.increaseActionCount(intention)
+            #tempActionRatio = self.increaseActionCount(intention)
+            tempActionCount = self.actionCount.copy() ## needed to copy so as not to change it
+            tempTotalActionCount = self.totalActionCount
+            
+            action = str(intention[2])
+            action = action.strip("'")
+            
+            if (action == "call/check"):
+                if self.canCall == True:
+                    action = "call"
+                elif self.canCheck == True:
+                    action = "check"
+                    
+            tempActionCount[action] += 1;
+            tempTotalActionCount += 1
+
+            tempActionRatio = self.emptyActionDict.copy()
+            distanceToTargetRatio = self.emptyActionDict.copy()
+            for i in tempActionCount:
+                tempActionRatio[i] = tempActionCount[i]/tempTotalActionCount
+                distanceToTargetRatio[i] = tempActionRatio[i] - self.targetActionRatio[i]
+                
+            print("Action ratio:",action,tempActionRatio)
+            print("Distance ratio:",action,distanceToTargetRatio)
+
+            difference = self.emptyActionDict.copy()
+            for i in tempActionRatio:
+                difference[i] = tempActionRatio[i] - distanceToTargetRatio[i]
+                
+            print("--difference:",difference)
+            
+            actionRatios.append(tempActionRatio)
+            
+        #print(actionRatios)
+            
+            
+
+        print("Waiting for agent decision", end="", flush = True)
+        for i in range(random.randint(4,10)):
+            print(".", end="")
+            time.sleep(0.5)
+        
+        action = "check"
+        
+        for i in self.actionCount:
+            print(i)
+            if i == action:
+                self.actionCount[i] += 1
+        self.totalActionCount += 1
+
+        print(self.actionCount,self.totalActionCount)
 
         """
         #pick random intention
@@ -56,38 +111,12 @@ class Agent(Player):
         chosenIntention = intentions[rand]
         #print(chosenIntention)
         action = chosenIntention[2]
-        """
-
-        print("Waiting for agent decision", end="", flush = True)
-        for i in range(random.randint(4,10)):
-            print(".", end="")
-            time.sleep(0.5)
+        """        
 
         return action
     
-    def increaseActionCount(self, intention):
-        tempActionCount = self.actionCount    ######ISSUES WITH SELF.ACTION COUNT
-        tempTotalActionCount = self.totalActionCount
-            
-        print(self.actionCount,tempTotalActionCount)
-            
-        action = str(intention[2])
-        action = action.strip("'")
-            
-        if (action == "call/check"):
-            if self.canCall == True:
-                action = "call"
-            elif self.canCheck == True:
-                action = "check"
-                    
-        tempActionCount[action] += 1;
-        tempTotalActionCount += 1
-
-        tempActionRatio = self.emptyActionDict
-        for i in tempActionCount:
-            tempActionRatio[i] = tempActionCount[i]/tempTotalActionCount
-        print("Action ratio:",tempActionRatio)
-        return tempActionRatio
+    #def increaseActionCount(self, intention):
+    #    return tempActionRatio
 
     def bet(self):
         print("")
