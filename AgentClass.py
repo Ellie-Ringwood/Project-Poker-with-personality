@@ -14,7 +14,7 @@ class Agent(Player):
         self.canCheck = False
         self.canRaise = False
 
-        self.profiles = ["TA", "TP", "LA", "LP"]
+        self.profiles = self.intentionClass.scoreOrder
         self.targetActionRatios = [[0.9, 0.6, 0.4, 0.5],[0.6, 0.5, 0.1, 0.7],[0.6, 0.8, 0.7, 0.2],[0.6, 0.9, 0.6, 0.4]] #check-call-raise-fold ratios for each profile
         
         self.profile = "TA"
@@ -23,23 +23,33 @@ class Agent(Player):
             if self.profile == self.profiles[i]:
                 self.targetActionRatio = self.targetActionRatios[i]
         
-        self.currentActionRatio = {"Check": 0,"Call":0, "Raise":0, "Fold":0}
-        self.ActionCount = {"Check": 0,"Call":0, "Raise":0, "Fold":0}
-        self.AllActionCount = 0
+        self.emptyActionDict = {"check":0,"call":0, "raise":0, "fold":0}
+        self.currentActionRatio = self.emptyActionDict
+        self.actionCount = self.emptyActionDict
+        self.totalActionCount = 0
         print(self.targetActionRatio)
         #print("bot constructed")
 
     def chooseAction(self, canCheck, canCall, canRaise):
         intentions = self.getIntentions(canCheck, canCall, canRaise)
         
-        # get score for this profile from each intention
-
-
+        # get score for this profile from each action    
+        intentionPreference = []  
+        for intention in intentions:
+            action = intention[2]
+            scores = intention[1]
+            score = 0
+            for i in range(len(self.profiles)):
+                if(self.profiles[i] ==self. profile):
+                    score = scores[i]
+            intentionPreference.append([action,score])
+        #print(intentionPreference)
 
         # get preference to action based on action ratios
+        
+        for intention in intentions:
+            tempActionRatio = self.increaseActionCount(intention)
 
-        
-        
         """
         #pick random intention
         rand = random.randint(0,len(intentions)-1)
@@ -55,7 +65,29 @@ class Agent(Player):
 
         return action
     
-    ##def increaseActionCount
+    def increaseActionCount(self, intention):
+        tempActionCount = self.actionCount    ######ISSUES WITH SELF.ACTION COUNT
+        tempTotalActionCount = self.totalActionCount
+            
+        print(self.actionCount,tempTotalActionCount)
+            
+        action = str(intention[2])
+        action = action.strip("'")
+            
+        if (action == "call/check"):
+            if self.canCall == True:
+                action = "call"
+            elif self.canCheck == True:
+                action = "check"
+                    
+        tempActionCount[action] += 1;
+        tempTotalActionCount += 1
+
+        tempActionRatio = self.emptyActionDict
+        for i in tempActionCount:
+            tempActionRatio[i] = tempActionCount[i]/tempTotalActionCount
+        print("Action ratio:",tempActionRatio)
+        return tempActionRatio
 
     def bet(self):
         print("")
