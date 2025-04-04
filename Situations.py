@@ -17,17 +17,16 @@ class SituationGenerator():
             string = string.strip("' '")
             try:
                 correct = int(string)
-                #print("int:", correct)
             except ValueError:
-                if string == "True":
-                    correct = True
-                    #print("bool:",correct)
-                elif string == "False":
-                   correct = False
-                   #print("bool:",correct)
-                else:
-                   correct = string
-                   #print("string:", string)
+                try:
+                    correct = float(string)
+                except ValueError:
+                    if string == "True":
+                        correct = True
+                    elif string == "False":
+                       correct = False
+                    else:
+                       correct = string
             typeArray.append(correct)
         if len(typeArray) == 1:
             return typeArray[0]
@@ -154,7 +153,7 @@ class SituationGenerator():
     def findIntentions(self, roundNum, cardName, callCheckFund, canRaise, bluffBelief, communityCard):
         if roundNum == 1:
             communityCard = "null"
-        print("Round, card, call/check, raise, bluff, community")
+        #print("Round, card, call/check, raise, bluff, community")
         validIntentions = []
         
         for intention in self.intentions:
@@ -169,8 +168,8 @@ class SituationGenerator():
                                     validIntentions.append(intention)
                                     
 
-        for intention in validIntentions:
-            print(intention)
+        #for intention in validIntentions:
+        #   print(intention)
         return validIntentions
 
 """

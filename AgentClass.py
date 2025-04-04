@@ -4,6 +4,7 @@ from CardClass import Card
 import time
 import random
 import copy
+import math
 
 class Agent(Player):
     def __init__(self,table, startingBalance, name):
@@ -22,14 +23,14 @@ class Agent(Player):
                                    {"check":0.6,"call":0.8, "raise":0.7, "fold":0.2},
                                    {"check":0.6,"call":0.9, "raise":0.6, "fold":0.4}] #check-call-raise-fold ratios for each profile
         
-        self.profile = "TA"
+        self.profile = "LA"
         self.targetActionRatio = {"check":0,"call":0, "raise":0, "fold":0}
         for i in range(len(self.profiles)):
             if self.profile == self.profiles[i]:
                 self.targetActionRatio = self.targetActionRatios[i]
         
         self.emptyActionDict = {"check":0,"call":0, "raise":0, "fold":0}
-        self.actionCount = self.emptyActionDict
+        self.actionCount = self.emptyActionDict.copy()
         self.totalActionCount = 0
         print(self.targetActionRatio)
         #print("bot constructed")
@@ -38,27 +39,29 @@ class Agent(Player):
         intentions = self.getIntentions(canCheck, canCall, canRaise)
         
         # get score for this profile from each action    
-        intentionPreference = []  
+        intentionPreference =  self.emptyActionDict.copy()
         for intention in intentions:
             action = intention[2]
             scores = intention[1]
+            
+            if (action == "call/check"):
+                if self.canCall == True:
+                    action = "call"
+                elif self.canCheck == True:
+                    action = "check"
+
             score = 0
             for i in range(len(self.profiles)):
                 if(self.profiles[i] ==self. profile):
                     score = scores[i]
-            intentionPreference.append([action,score])
+            intentionPreference[action] = score 
         #print(intentionPreference)
 
         # get preference to action based on action ratios
-        
-        actionRatios = []
+        originalDisc = self.getDiscrepency(self.actionCount, self.targetActionRatio, self.totalActionCount) ## discrepancy between current action ratio and target
+        improvement = self.emptyActionDict.copy()
         for intention in intentions:
-            #tempActionRatio = self.increaseActionCount(intention)
-            tempActionCount = self.actionCount.copy() ## needed to copy so as not to change it
-            tempTotalActionCount = self.totalActionCount
-            
-            action = str(intention[2])
-            action = action.strip("'")
+            action = intention[-1]
             
             if (action == "call/check"):
                 if self.canCall == True:
@@ -66,44 +69,47 @@ class Agent(Player):
                 elif self.canCheck == True:
                     action = "check"
                     
-            tempActionCount[action] += 1;
-            tempTotalActionCount += 1
-
-            tempActionRatio = self.emptyActionDict.copy()
-            distanceToTargetRatio = self.emptyActionDict.copy()
+            tempActionCount = self.actionCount.copy() ## needed to copy so as not to change it
             for i in tempActionCount:
-                tempActionRatio[i] = tempActionCount[i]/tempTotalActionCount
-                distanceToTargetRatio[i] = tempActionRatio[i] - self.targetActionRatio[i]
-                
-            print("Action ratio:",action,tempActionRatio)
-            print("Distance ratio:",action,distanceToTargetRatio)
+                if i == action:
+                    tempActionCount[i] += 1
+            tempTotalActionCount = self.totalActionCount + 1
+            actionDisc = self.getDiscrepency(tempActionCount, self.targetActionRatio, tempTotalActionCount)
+            improvement[action] = round(originalDisc - actionDisc, 3) 
+            
+        #print(improvement)
+        
+        decisionScores = self.emptyActionDict.copy()
+        for i in intentionPreference:
+           # print(i, intentionPreference[i], improvement[i],  intentionPreference[i] + improvement[i])
+            decisionScores[i] = round(intentionPreference[i] + improvement[i],3) #+ (random.randint(0,3)/10), 3)
+        print(decisionScores)
 
-            difference = self.emptyActionDict.copy()
-            for i in tempActionRatio:
-                difference[i] = tempActionRatio[i] - distanceToTargetRatio[i]
-                
-            print("--difference:",difference)
-            
-            actionRatios.append(tempActionRatio)
-            
-        #print(actionRatios)
-            
-            
-
+        bestScore = -10 
+        bestActions = []
+        for action in decisionScores:
+            if (decisionScores[action] > bestScore):
+                bestScore = decisionScores[action]
+                bestActions = [action]
+            elif (decisionScores[action] == bestScore):
+                bestActions.append(action)
+        
+        #print(bestAction, best)
+        
         print("Waiting for agent decision", end="", flush = True)
         for i in range(random.randint(4,10)):
             print(".", end="")
             time.sleep(0.5)
-        
-        action = "check"
+            
+        if(len(bestActions) == 0):
+            ChosenAction = bestActions[0]
+        else:
+            ChosenAction = bestActions[random.randint(0,len(bestActions)-1)]           
         
         for i in self.actionCount:
-            print(i)
-            if i == action:
+            if i == ChosenAction:
                 self.actionCount[i] += 1
         self.totalActionCount += 1
-
-        print(self.actionCount,self.totalActionCount)
 
         """
         #pick random intention
@@ -111,12 +117,27 @@ class Agent(Player):
         chosenIntention = intentions[rand]
         #print(chosenIntention)
         action = chosenIntention[2]
-        """        
-
-        return action
+        """  
+        
+        return ChosenAction
     
-    #def increaseActionCount(self, intention):
-    #    return tempActionRatio
+    def getDiscrepency(self, current, target, total):
+        discrepency = 0
+        
+        #ratio = self.emptyActionDict.copy()
+        diff = self.emptyActionDict.copy()
+        for i in current:
+            try:
+                value = current[i] / total
+            except:
+                value = 0
+            #print("i:", i, value)
+            diff[i] = math.sqrt(pow(value-target[i],2))
+            #print(diff[i])
+            
+        for i in diff:
+           discrepency += diff[i]
+        return discrepency
 
     def bet(self):
         print("")

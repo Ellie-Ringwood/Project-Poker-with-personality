@@ -48,11 +48,11 @@ while playingHand:
                 deck.shuffleDeck()
                 
                 ## can deal manually or with a for statement
-                table.players[0].receiveCard(deck.dealSpecificCard("Queen"))
-                table.players[1].receiveCard(deck.dealSpecificCard("Queen"))
+                #table.players[0].receiveCard(deck.dealSpecificCard("Queen"))
+                #table.players[1].receiveCard(deck.dealSpecificCard("Queen"))
                 
-                #for i in range(len(table.players)):
-                #    table.players[i].receiveCard(deck.dealCard())
+                for i in range(len(table.players)):
+                    table.players[i].receiveCard(deck.dealCard())
 
                 # each player bets
                 table.handNotWon = table.betting()
