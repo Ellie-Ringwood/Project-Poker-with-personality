@@ -2,6 +2,7 @@ import random
 from PlayerClass import Player
 from AgentClass import Agent
 from CardClass import Card
+from Situations import SituationGenerator
 
 class Table:
     def __init__(self):
@@ -12,6 +13,7 @@ class Table:
         self.maxRaisesEach = 2
         self.hand = 0
         self.raiseAmount = 2 * self.currentRound
+        #self.intentionClass = SituationGenerator()
         #print("table constructed") 
 
     def resetTable(self):
@@ -20,6 +22,7 @@ class Table:
         self.handNotWon = True
         self.winner = -1
         self.firstPlayerIndex = random.randint(0, len(self.possiblePlayers) - 1)
+        self.currentPlayerBetting = Player(self,0,"")
         self.communityCard = Card(-1,"null")
         self.pot = 0
         self.currentBetAmount = 0
@@ -86,6 +89,7 @@ class Table:
         while stillBetting:
             if (self.currentDifferenceInBets() != 0) or i == 0:
                 for player in self.players:
+                    self.currentPlayerBetting = player
                     if (player.folded == False) and (self.continueBetting == True):
                         player.bet()
                     if (self.continueBetting == False):

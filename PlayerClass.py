@@ -11,6 +11,7 @@ class Player():
         self.canCall = False
         self.canCheck = False
         self.canRaise = False
+        self.actionCount = {"check":0,"call":0, "raise":0, "fold":0}
         #print("player constructed")
 
     def resetHand(self):
@@ -146,5 +147,49 @@ class Player():
                 self.table.playerFolds(self)
         ## CHECK = no adding to pot, matching previous bet - e.g. just using blinds
 
+        self.recordActions(action)
+        
+    def betUI(self):
+        action = ""
 
+        diff = self.getDifference()
 
+        self.canCall = False
+        self.canCheck = False
+        self.canRaise = False
+        if (self.amountBetThisRound < self.table.getCurrentBet()): ## if bets not equal, needs to call to get to same amount
+            if (self.balance >= diff): ##if has enough funds to call
+                self.canCall = True
+        else:
+            self.canCheck = True
+        
+        if (self.timesRaisedThisRound < self.table.maxRaisesEach): ## if not past max bets, can raise
+            if(self.balance >= diff + self.table.raiseAmount):
+                self.canRaise = True
+
+        action = self.getValidAction(self.canCheck,self.canCall, self.canRaise)
+
+        match action:
+            case "call": # add to pot, matching check or raise
+                self.removeFunds(diff)
+            case "raise": # raise by raise amount + any difference to previous player
+                self.removeFunds(diff + self.table.raiseAmount)
+                self.table.addCurrentBet(self.table.raiseAmount)
+                self.timesRaisedThisRound += 1
+            case "fold": # if everyone but one player folds, they automatically win the hand
+                self.folded = True
+                self.table.playerFolds(self)
+        ## CHECK = no adding to pot, matching previous bet - e.g. just using blinds
+
+        self.recordActions(action)
+
+    def recordActions(self, action):
+        for i in self.actionCount:
+            if i == action:
+                self.actionCount[i] += 1
+        print(self.actionCount)
+                
+
+                
+   #def saveCustomProfile(self):
+   

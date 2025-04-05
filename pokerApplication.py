@@ -3,16 +3,18 @@ from CardClass import Card
 from DeckClass import Deck
 from TableClass import Table
 from PlayerClass import Player
+from UI import UI
 
 ############################################ main code ############################################
 ##global attributes
 global table
 table = Table()
 playingHand = True
+#ui = UI(table)
 
 # begin game
 while playingHand:
-
+    #ui.update()
     ## get list of players with funds
     print("starting new hand")
     table.getPlayersWithFunds()

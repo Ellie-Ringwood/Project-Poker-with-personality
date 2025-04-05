@@ -1,5 +1,6 @@
 from abc import ABCMeta
 from http.client import PARTIAL_CONTENT
+from sqlite3 import DateFromTicks
 from DeckClass import Deck
 import csv
 
@@ -59,12 +60,12 @@ class SituationGenerator():
                 self.intentions.append(intention)
         #self.displayArray(self.intentions)
 
-    def setToFile(self):
+    def setToFile(self, fileName):
         self.createSituations()
         self.findRepeats(self.situations)
         self.createIntentions()
         self.findRepeats(self.intentions)
-        f = open("Intentions.txt", "w")
+        f = open(fileName, "w")
         for intention in self.intentions:
             f.write(f"{intention}\n")
         f.close()
@@ -171,6 +172,9 @@ class SituationGenerator():
         #for intention in validIntentions:
         #   print(intention)
         return validIntentions
+    
+   # def createCustomProfile(self, ):
+        
 
 """
 s = SituationGenerator()

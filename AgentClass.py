@@ -1,6 +1,6 @@
 from PlayerClass import Player
-from Situations import SituationGenerator
 from CardClass import Card
+from Situations import SituationGenerator
 import time
 import random
 import copy
@@ -11,6 +11,7 @@ class Agent(Player):
         super().__init__(table, startingBalance, name)
         self.intentionClass = SituationGenerator()
         self.intentionClass.setFromFile()
+        #self.table.intentionClass.setFromFile()
         #self.resetHand()
         self.canCall = False
         self.canCheck = False
