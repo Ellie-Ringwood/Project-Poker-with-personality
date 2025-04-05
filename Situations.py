@@ -34,7 +34,11 @@ class SituationGenerator():
 
     def setFromFile(self, filename):
         intentions = []
-        f = open(str(filename+".txt"), "r")
+        try:
+            f = open(str(filename+".txt"), "r")
+        except:
+            self.setToFile(filename,1)#
+            f = open(str(filename+".txt"), "r")
         for line in f:
             line = line.strip()
             intention = []
@@ -56,14 +60,14 @@ class SituationGenerator():
                                 intention.append(self.stringArrayToTypeArray(array))
                         count += 1
             intentions.append(intention)
-        self.displayArray(intentions)
+        #self.displayArray(intentions)
         return intentions
 
     def setToFile(self, filename, numberOfScores):
         situations = self.createSituations()
-        self.findRepeats(situations)
+        #self.findRepeats(situations)
         intentions = self.createIntentions(situations, numberOfScores)
-        self.findRepeats(intentions)
+        #self.findRepeats(intentions)
         f = open(str(filename+".txt"), "w")
         for intention in intentions:
             f.write(f"{intention}\n")
@@ -124,7 +128,7 @@ class SituationGenerator():
         profileScores = []
         intentions = []
         for i in range(numberOfScores):
-            profileScores.append(-1)
+            profileScores.append(0)
         for situation in situations:
             possibleActions = self.getPossibleActions(situation)
             for action in possibleActions:
@@ -155,13 +159,12 @@ class SituationGenerator():
         possibleActions.append("fold")
         return possibleActions
             
-    def findIntentions(self, roundNum, cardName, callCheckFund, canRaise, bluffBelief, communityCard):
+    def findIntentions(self,intentions, roundNum, cardName, callCheckFund, canRaise, bluffBelief, communityCard):
         if roundNum == 1:
             communityCard = "null"
-        #print("Round, card, call/check, raise, bluff, community")
+            
         validIntentions = []
-        
-        for intention in self.intentions:
+        for intention in intentions:
             situation = intention[0]
             
             if (roundNum == situation[0]) or (situation[0] == "any"):

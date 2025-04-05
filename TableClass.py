@@ -6,14 +6,16 @@ from Situations import SituationGenerator
 
 class Table:
     def __init__(self):
-        
-        self.possiblePlayers = [Player(self,10,"Human"), Agent(self,10,"Agent")]
+        self.possiblePlayers = []
+        self.firstPlayerIndex = 0
         self.resetTable()
         self.blindAmount = 1
         self.maxRaisesEach = 2
         self.hand = 0
         self.raiseAmount = 2 * self.currentRound
-        #self.intentionClass = SituationGenerator()
+        self.intentionClass = SituationGenerator()
+        self.possiblePlayers = [Player(self,10,"Human"), Agent(self,10,"Agent")]
+        #elf.firstPlayerIndex = random.randint(0, len(self.possiblePlayers) - 1)
         #print("table constructed") 
 
     def resetTable(self):
@@ -21,12 +23,16 @@ class Table:
         self.currentRound = 1
         self.handNotWon = True
         self.winner = -1
-        self.firstPlayerIndex = random.randint(0, len(self.possiblePlayers) - 1)
-        self.currentPlayerBetting = Player(self,0,"")
+        if(len(self.possiblePlayers)>0): 
+            self.firstPlayerIndex = random.randint(0, len(self.possiblePlayers) - 1)
+        self.currentPlayerIndex = -1
         self.communityCard = Card(-1,"null")
         self.pot = 0
         self.currentBetAmount = 0
         self.continueBetting = True
+        
+    def getIntentionClass(self):
+        return self.intentionClass
 
     def getCommunityCard(self):
         return self.communityCard

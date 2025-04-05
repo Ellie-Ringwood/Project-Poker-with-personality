@@ -12,7 +12,11 @@ class Player():
         self.canCheck = False
         self.canRaise = False
         self.actionCount = {"check":0,"call":0, "raise":0, "fold":0}
-        #print("player constructed")
+        self.intentions = table.getIntentionClass().setFromFile(name)
+        if self.intentions[0].startswith("actionRatio"):
+            print(self.intentions[0]) ## trying to get action ratio from start of intention file
+            self.intentions.pop(0)
+            
 
     def resetHand(self):
         self.currentCard = Card(-1,"null")
@@ -148,7 +152,9 @@ class Player():
         ## CHECK = no adding to pot, matching previous bet - e.g. just using blinds
 
         self.recordActions(action)
-        
+        self.recordIntentions(action)
+
+    """  
     def betUI(self):
         action = ""
 
@@ -182,14 +188,44 @@ class Player():
         ## CHECK = no adding to pot, matching previous bet - e.g. just using blinds
 
         self.recordActions(action)
+        self.recordIntentions(action)
+    """
 
     def recordActions(self, action):
         for i in self.actionCount:
             if i == action:
                 self.actionCount[i] += 1
         print(self.actionCount)
+    
+    def recordIntentions(self, action):
+        situation = []
+        canCallOrCheck = self.canCall or self.canCheck
+        communityCard = "null"
+        if self.table.communityCard.getName() != "null":
+            if self.table.communityCard == self.currentCard:
+                communityCard = "same"
+            else:
+                communityCard = "diff"
+            
+        intentions = self.table.intentionClass.findIntentions(self.intentions, self.table.currentRound,self.currentCard.getName(),
+                                                             canCallOrCheck,self.canRaise,"null",communityCard)
+        print(intentions)
+        currentIntention = []
+        for intention in intentions:
+            intentionAction = intention[-1]
+            if (intention[-1] == "call/check"):
+                if self.canCall == True:
+                    intentionAction = "call"
+                elif self.canCheck == True:
+                    intentionAction = "check"
+            if (intentionAction == action):
+                currentIntention = intention
                 
-
-                
-   #def saveCustomProfile(self):
+        print(currentIntention)
+        currentIntention[-2] += 1
+        
+        ## replace initial intention with new intention
+        ## work out ho wim doing count
+        # work out how im doing action ratio in file  
+        
    

@@ -39,8 +39,6 @@ while playingHand:
                 print("Round 1: 1st player pays small blind (",table.blindAmount,"), second pays big blind (",table.blindAmount*2,"), get dealt a card, then bet")
                 # remove blind amount from player funds
 
-                #print("lenght of players:", len(table.players))
-
                 for i in range(len(table.players)):
                     table.players[i].removeBlind(i)
 
@@ -86,4 +84,4 @@ while playingHand:
     if exit == "E":
         playingHand = False
 
-print("Exitting application")
+print("Exiting application")

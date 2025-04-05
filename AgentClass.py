@@ -9,22 +9,20 @@ import math
 class Agent(Player):
     def __init__(self,table, startingBalance, name):
         super().__init__(table, startingBalance, name)
-        self.intentionClass = SituationGenerator()
-        self.intentionClass.setFromFile()
-        #self.table.intentionClass.setFromFile()
+        self.intentions = self.table.intentionClass.setFromFile("Intentions")
         #self.resetHand()
         self.canCall = False
         self.canCheck = False
         self.canRaise = False
 
-        self.profiles = self.intentionClass.scoreOrder
+        self.profiles = self.table.intentionClass.scoreOrder
         #self.targetActionRatios = [[0.9, 0.6, 0.4, 0.5],[0.6, 0.5, 0.1, 0.7],[0.6, 0.8, 0.7, 0.2],[0.6, 0.9, 0.6, 0.4]] #check-call-raise-fold ratios for each profile
         self.targetActionRatios = [{"check":0.9,"call":0.6, "raise":0.4, "fold":0.5},
                                    {"check":0.6,"call":0.5, "raise":0.1, "fold":0.7},
                                    {"check":0.6,"call":0.8, "raise":0.7, "fold":0.2},
                                    {"check":0.6,"call":0.9, "raise":0.6, "fold":0.4}] #check-call-raise-fold ratios for each profile
         
-        self.profile = "LA"
+        self.profile = "LP"
         self.targetActionRatio = {"check":0,"call":0, "raise":0, "fold":0}
         for i in range(len(self.profiles)):
             if self.profile == self.profiles[i]:
@@ -199,8 +197,7 @@ class Agent(Player):
         elif self.table.communityCard.getName() == "null":
             community = "null"
 
-        #print("Should:",self.table.currentRound,self.currentCard.getName(),canCallOrCheck,canRaise,bluff,community)
-        intentions = self.intentionClass.findIntentions(self.table.currentRound,self.currentCard.getName(),canCallOrCheck,canRaise,bluff,community)
+        intentions = self.table.intentionClass.findIntentions(self.intentions, self.table.currentRound,self.currentCard.getName(),canCallOrCheck,canRaise,bluff,community)
         return intentions
 
     def predictBluff(self):
