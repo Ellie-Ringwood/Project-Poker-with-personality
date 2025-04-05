@@ -5,12 +5,10 @@ from DeckClass import Deck
 import csv
 
 class SituationGenerator():
-    def __init__(self):
-        self.situations = []
-        self.intentions = []        
+    def __init__(self):     
         self.possibleCards = Deck(1).cards
         self.rounds = 2
-        self.scoreOrder = ["TA","TP",  "LA", "LP"]
+        self.scoreOrder = ["TA","TP","LA", "LP"]
         
     def stringArrayToTypeArray(self, array):
         typeArray = []
@@ -34,43 +32,44 @@ class SituationGenerator():
         else:
             return typeArray
 
-    def setFromFile(self):
-        if self.intentions == []:
-            f = open("Intentions.txt", "r")
-            for line in f:
-                line = line.strip()
-                intention = []
-                count = 0
-                for word in line.split('],'):
-                    word = word.strip()
-                    word = word.strip("]")
-                    found = False
-                    for i in range(len(word)):
-                        if word[i] != "[" and not found:
-                            array = word[i:].split(",")
-                            found = True
-                            match count:
-                                case 0:
-                                    intention.append(self.stringArrayToTypeArray(array))
-                                case 1:
-                                    intention.append(self.stringArrayToTypeArray(array))
-                                case 2:
-                                    intention.append(self.stringArrayToTypeArray(array))
-                            count += 1
-                self.intentions.append(intention)
-        #self.displayArray(self.intentions)
+    def setFromFile(self, filename):
+        intentions = []
+        f = open(str(filename+".txt"), "r")
+        for line in f:
+            line = line.strip()
+            intention = []
+            count = 0
+            for word in line.split('],'):
+                word = word.strip()
+                word = word.strip("]")
+                found = False
+                for i in range(len(word)):
+                    if word[i] != "[" and not found:
+                        array = word[i:].split(",")
+                        found = True
+                        match count:
+                            case 0:
+                                intention.append(self.stringArrayToTypeArray(array))
+                            case 1:
+                                intention.append(self.stringArrayToTypeArray(array))
+                            case 2:
+                                intention.append(self.stringArrayToTypeArray(array))
+                        count += 1
+            intentions.append(intention)
+        self.displayArray(intentions)
+        return intentions
 
-    def setToFile(self, fileName):
-        self.createSituations()
-        self.findRepeats(self.situations)
-        self.createIntentions()
-        self.findRepeats(self.intentions)
-        f = open(fileName, "w")
-        for intention in self.intentions:
+    def setToFile(self, filename, numberOfScores):
+        situations = self.createSituations()
+        self.findRepeats(situations)
+        intentions = self.createIntentions(situations, numberOfScores)
+        self.findRepeats(intentions)
+        f = open(str(filename+".txt"), "w")
+        for intention in intentions:
             f.write(f"{intention}\n")
         f.close()
         
-    def addSituation(self,roundNum, card, callCheckFund, canRaise, bluffBelief, communityCard):
+    def addSituation(self,situations,roundNum, card, callCheckFund, canRaise, bluffBelief, communityCard):
         match communityCard:
             case 0:
                 communityCardStatus = "same"
@@ -89,10 +88,11 @@ class SituationGenerator():
         else:
             situation = [roundNum, card.getName(), bool(callCheckFund), bool(canRaise), bluffStatus, communityCardStatus]
         
-        if (situation not in self.situations):
-            self.situations.append(situation)
+        if (situation not in situations):
+            return situations.append(situation)
 
     def createSituations(self):
+        situations = []
         for roundNum in range(1, self.rounds+1):
             for firstBetRound in range(0,2):
                 for card in self.possibleCards:
@@ -100,18 +100,19 @@ class SituationGenerator():
                         for canRaise in range(0,2):
                             if roundNum == 1: ## if first round, no community card
                                 if firstBetRound == 0: # first bet so can't guess bluff
-                                    self.addSituation(roundNum,card,enoughForCallCheck,canRaise,-1,-1)
+                                    self.addSituation(situations,roundNum,card,enoughForCallCheck,canRaise,-1,-1)
                                 else:
                                     for bluffBelief in range(0,2): #true or false, if agent believes opponent is bluffing 
-                                        self.addSituation(roundNum,card,enoughForCallCheck,canRaise,bluffBelief,-1)
+                                        self.addSituation(situations,roundNum,card,enoughForCallCheck,canRaise,bluffBelief,-1)
                             else: ## not first round
                                 for communityCard in range(0,2):
                                     if firstBetRound == 0: # first bet so can't guess bluff
-                                        self.addSituation(roundNum,card,enoughForCallCheck,canRaise,-1,communityCard)
+                                        self.addSituation(situations,roundNum,card,enoughForCallCheck,canRaise,-1,communityCard)
                                     else:
                                         for bluffBelief in range(0,2): #true or false, if agent believes opponent is bluffing 
-                                            self.addSituation(roundNum,card,enoughForCallCheck,canRaise,bluffBelief,communityCard)
-         
+                                            self.addSituation(situations,roundNum,card,enoughForCallCheck,canRaise,bluffBelief,communityCard)
+        return situations         
+
     def findRepeats(self, array):
         newArray = []
         for element in array:
@@ -119,14 +120,17 @@ class SituationGenerator():
                 newArray.append(element)
         print(len(array)-len(newArray),"repeated elements")
 
-    def createIntentions(self):
-        profileScores = [0,0,0,0]
-        #outcomeScore = 0
-        for situation in self.situations:
+    def createIntentions(self, situations, numberOfScores):
+        profileScores = []
+        intentions = []
+        for i in range(numberOfScores):
+            profileScores.append(-1)
+        for situation in situations:
             possibleActions = self.getPossibleActions(situation)
             for action in possibleActions:
-                self.intentions.append([situation, profileScores, action]) 
-                #self.intentions.append([situation, [profileScores, outcomeScore], action]) 
+                intentions.append([situation, profileScores, action])
+                
+        return intentions
 
     def displayArray(self,array):
         print(len(array))
@@ -176,12 +180,12 @@ class SituationGenerator():
    # def createCustomProfile(self, ):
         
 
-"""
+
 s = SituationGenerator()
+s.setToFile("Ellie", 1)
 #s.setToFile()
-print(len(s.situations))
-print(len(s.intentions))
-s.setFromFile()
-"""
+#print(len(s.situations))
+#print(len(s.intentions))
+#s.setFromFile()
 
 
