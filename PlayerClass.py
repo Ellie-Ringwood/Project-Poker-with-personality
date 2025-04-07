@@ -105,12 +105,13 @@ class Player():
         print("")
         print (self.name, "'s turn to bet:")
         print ("Pot:", self.table.getPot())
-        print ("Balance:", self.balance)
+        print ("Funds:", self.balance)
+        print("Funds bet so far: ",self.amountBetThisRound)
+        #print("Current bet to match:", self.table.getCurrentBet())
+        if (self.table.getCommunityCard() != "null"): 
+            print ("\nCommunity Card:", self.table.getCommunityCard())
         print("Card:",self.currentCard.getName())
         action = ""
-
-        print("Funds bet so far: ",self.amountBetThisRound)
-        print("Current bet to match:", self.table.getCurrentBet())
 
         diff = self.getDifference()
 
@@ -134,6 +135,8 @@ class Player():
         print(" - Fold")
         action = self.getValidAction(self.canCheck,self.canCall, self.canRaise)
 
+        self.GoToNextPlayer(action)
+
         match action:
             case "call": # add to pot, matching check or raise
                 self.removeFunds(diff)
@@ -146,5 +149,14 @@ class Player():
                 self.table.playerFolds(self)
         ## CHECK = no adding to pot, matching previous bet - e.g. just using blinds
 
+    def GoToNextPlayer(self, action):
+        for i in range(50):
+            print("--------------------")
+        print("Please hand over control to opponent")
+        next = input("Ready for next player's turn? press enter to continue")
+        for i in range(50):
+            print("--------------------")
+
+        print("Opponent performed",action,"action\n")
 
 

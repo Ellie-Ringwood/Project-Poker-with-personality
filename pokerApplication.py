@@ -14,12 +14,13 @@ playingHand = True
 while playingHand:
 
     ## get list of players with funds
-    print("starting new hand")
+    print("Starting new hand")
     table.getPlayersWithFunds()
     if (len(table.players) < 2):
         print("Not enough players with funds")
         playingHand = False
         break 
+    print("\n")
 
     for player in table.players:
         print(player.getName(),"has a balance of:", player.getBalance())
@@ -35,6 +36,13 @@ while playingHand:
         if table.currentRound == 1:
             if table.players:
                 print("Round 1: 1st player pays small blind (",table.blindAmount,"), second pays big blind (",table.blindAmount*2,"), get dealt a card, then bet")
+                
+                print("--------------------")
+                print("First player is:", table.players[0].getName())
+                next = input("Understand and ready to start "+table.players[0].getName()+"'s turn? press enter to continue")
+                for i in range(50):
+                    print("--------------------")
+                
                 # remove blind amount from player funds
 
                 #print("lenght of players:", len(table.players))
@@ -60,10 +68,17 @@ while playingHand:
                 table.currentRound += 1
                 
         elif (table.currentRound == 2) and table.handNotWon == True:
-            print("\n----------------\nRound 2: Table gets dealt one community card, then bet")
+            print("\n----------------\nRound 2: Table gets dealt one community card, then bet")            
+
             # shuffle and deal 1 community card to the table
             deck.shuffleDeck()
             table.recieveCommunityCard(deck.dealCard())
+            print("--------------------")
+            print("First player is:", table.players[0].getName())
+            next = input("Understand and ready to start "+table.players[0].getName()+"'s turn? press enter to continue")
+            for i in range(50):
+                print("--------------------")            
+
             ####then betting
             table.handNotWon = table.betting()
             table.currentRound += 1
@@ -83,5 +98,8 @@ while playingHand:
     exit = str(input("")).upper()
     if exit == "E":
         playingHand = False
+    else:
+        for i in range(50):
+            print("--------------------")
 
-print("Exitting application")
+print("Exiting application")

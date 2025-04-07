@@ -17,13 +17,12 @@ class Agent(Player):
         self.canRaise = False
 
         self.profiles = self.intentionClass.scoreOrder
-        #self.targetActionRatios = [[0.9, 0.6, 0.4, 0.5],[0.6, 0.5, 0.1, 0.7],[0.6, 0.8, 0.7, 0.2],[0.6, 0.9, 0.6, 0.4]] #check-call-raise-fold ratios for each profile
-        self.targetActionRatios = [{"check":0.9,"call":0.6, "raise":0.4, "fold":0.5},
+        self.targetActionRatios = [{"check":0.9,"call":0.6, "raise":0.4, "fold":0.2}, ## adapted for mine
                                    {"check":0.6,"call":0.5, "raise":0.1, "fold":0.7},
                                    {"check":0.6,"call":0.8, "raise":0.7, "fold":0.2},
-                                   {"check":0.6,"call":0.9, "raise":0.6, "fold":0.4}] #check-call-raise-fold ratios for each profile
-        
-        self.profile = "LA"
+                                   {"check":0.6,"call":0.9, "raise":0.6, "fold":0.4}]
+                                   #{"check":0.6,"call":0.6, "raise":0.6, "fold":0.3},] #check-call-raise-fold ratios for each profile
+        self.profile = "TA"
         self.targetActionRatio = {"check":0,"call":0, "raise":0, "fold":0}
         for i in range(len(self.profiles)):
             if self.profile == self.profiles[i]:
@@ -32,7 +31,6 @@ class Agent(Player):
         self.emptyActionDict = {"check":0,"call":0, "raise":0, "fold":0}
         self.actionCount = self.emptyActionDict.copy()
         self.totalActionCount = 0
-        print(self.targetActionRatio)
         #print("bot constructed")
 
     def chooseAction(self, canCheck, canCall, canRaise):
@@ -81,7 +79,6 @@ class Agent(Player):
         
         decisionScores = self.emptyActionDict.copy()
         for i in intentionPreference:
-           # print(i, intentionPreference[i], improvement[i],  intentionPreference[i] + improvement[i])
             decisionScores[i] = round(intentionPreference[i] + improvement[i],3) #+ (random.randint(0,3)/10), 3)
         print(decisionScores)
 
@@ -93,13 +90,12 @@ class Agent(Player):
                 bestActions = [action]
             elif (decisionScores[action] == bestScore):
                 bestActions.append(action)
-        
-        #print(bestAction, best)
-        
+        """
         print("Waiting for agent decision", end="", flush = True)
         for i in range(random.randint(4,10)):
             print(".", end="")
             time.sleep(0.5)
+        """
             
         if(len(bestActions) == 0):
             ChosenAction = bestActions[0]
@@ -110,14 +106,9 @@ class Agent(Player):
             if i == ChosenAction:
                 self.actionCount[i] += 1
         self.totalActionCount += 1
-
-        """
-        #pick random intention
-        rand = random.randint(0,len(intentions)-1)
-        chosenIntention = intentions[rand]
-        #print(chosenIntention)
-        action = chosenIntention[2]
-        """  
+        
+        print("\n chosen action:",ChosenAction)
+        input("Faff: ")
         
         return ChosenAction
     
@@ -168,7 +159,7 @@ class Agent(Player):
         print(" - Fold")
         
         action = self.chooseAction(self.canCheck, self.canCall, self.canRaise)
-        print("Agent performed",action,"action\n")
+        self.GoToNextPlayer(action)
 
         match action:
             case "call": # add to pot, matching check or raise
@@ -198,7 +189,6 @@ class Agent(Player):
         elif self.table.communityCard.getName() == "null":
             community = "null"
 
-        #print("Should:",self.table.currentRound,self.currentCard.getName(),canCallOrCheck,canRaise,bluff,community)
         intentions = self.intentionClass.findIntentions(self.table.currentRound,self.currentCard.getName(),canCallOrCheck,canRaise,bluff,community)
         return intentions
 

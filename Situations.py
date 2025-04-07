@@ -9,7 +9,7 @@ class SituationGenerator():
         self.intentions = []        
         self.possibleCards = Deck(1).cards
         self.rounds = 2
-        self.scoreOrder = ["TA","TP",  "LA", "LP"]
+        self.scoreOrder = ["TA","TP",  "LA", "LP", "Ellie"]
         
     def stringArrayToTypeArray(self, array):
         typeArray = []
