@@ -6,7 +6,7 @@ from CardClass import Card
 class Table:
     def __init__(self):
         
-        self.possiblePlayers = [Player(self,10,"Eleanor"), Agent(self,10,"AI/Ellie")]
+        self.possiblePlayers = [Player(self,10,"Eleanor"), Player(self,10,"AI/Ellie")]
         self.resetTable()
         self.blindAmount = 1
         self.maxRaisesEach = 2
@@ -115,7 +115,9 @@ class Table:
             if winnerIndexes == []: ## if the card is no the same for any of the players
                 playerCardValues = []
                 for i in range(len(self.players)):
+                    
                     card = self.players[i].getCurrentCard().getValue()
+                    print(self.players[i].getName(), card)
                     playerCardValues.append(card)
 
                 maxValue = -1
@@ -125,6 +127,7 @@ class Table:
                         maxValue = playerCardValues[i]
                     elif playerCardValues[i] == maxValue:
                         winnerIndexes.append(i)
+                print(maxValue)
         self.awardWinnings(winnerIndexes)
     
     def awardWinnings(self, winnerIndexes):

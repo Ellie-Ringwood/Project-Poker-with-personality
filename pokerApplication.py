@@ -68,7 +68,7 @@ while playingHand:
                 table.currentRound += 1
                 
         elif (table.currentRound == 2) and table.handNotWon == True:
-            print("\n----------------\nRound 2: Table gets dealt one community card, then bet")            
+            print("\n----------------\nRound 2: Table gets dealt one community card, then bet")
 
             # shuffle and deal 1 community card to the table
             deck.shuffleDeck()

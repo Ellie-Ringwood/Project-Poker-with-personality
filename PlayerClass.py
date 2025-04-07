@@ -100,17 +100,23 @@ class Player():
                 print(action)
                 print("Please enter valid action")
         return action
-
-    def bet(self):
+    
+    def info(self):
         print("")
         print (self.name, "'s turn to bet:")
         print ("Pot:", self.table.getPot())
+        for player in self.table.players:
+            if (player != self):
+                print(player.getName()+"'s Funds:", player.getBalance())
         print ("Funds:", self.balance)
         print("Funds bet so far: ",self.amountBetThisRound)
         #print("Current bet to match:", self.table.getCurrentBet())
-        if (self.table.getCommunityCard() != "null"): 
+        if (self.table.getCommunityCard().getName() != "null"): 
             print ("\nCommunity Card:", self.table.getCommunityCard())
-        print("Card:",self.currentCard.getName())
+        print("Card:",self.currentCard.getName())  
+
+    def bet(self):
+        self.info()
         action = ""
 
         diff = self.getDifference()

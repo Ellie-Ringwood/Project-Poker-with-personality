@@ -11,7 +11,7 @@ class Deck:
         cards = []
         for suit in range(suits):
             for value in range(len(values)):
-                cards.append(Card(value,values[value-1]))
+                cards.append(Card(value,values[value]))
         return cards
 
     def printDeck(self):

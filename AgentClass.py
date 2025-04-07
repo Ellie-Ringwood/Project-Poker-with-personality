@@ -129,14 +129,20 @@ class Agent(Player):
         for i in diff:
            discrepency += diff[i]
         return discrepency
+    
+
 
     def bet(self):
+        self.info()
+        """
         print("")
         print (self.name, "'s turn to bet:")
         print ("Pot:", self.table.getPot())
-        print ("Balance:", self.balance)
+        print ("Funds:", self.balance)
         print("Card:",self.currentCard.getName())
+        """
         action = ""
+        
         diff = self.getDifference()
         
         self.canCall = False
