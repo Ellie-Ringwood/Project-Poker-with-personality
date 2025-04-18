@@ -2,9 +2,12 @@ import random
 from PlayerClass import Player
 from AgentClass import Agent
 from CardClass import Card
+from Situations import SituationGenerator
 
 class Table:
     def __init__(self):
+        ## create communial intention class, so its niot repeated by each agent
+        self.intentionClass = SituationGenerator()
         ## enter players, starting funds and names
         self.possiblePlayers = [Player(self,20,"M"), Agent(self,20,"AI/Ellie","TA")]
         ## set variables for the game
@@ -35,6 +38,9 @@ class Table:
     
     def getPot(self):
         return self.pot
+    
+    def getIntentionClass(self):
+        return self.intentionClass
 
     ## other functions
     def recieveCommunityCard(self,card):
@@ -148,7 +154,7 @@ class Table:
         else:
             ## if multiple winners there is a draw
             ## print out names of winners nicely
-            print("\nThere are multiple winners, each with a",winnerIndexes[0].getCurrentCard().getName())
+            print("\nThere are multiple winners, each with a",self.players[winnerIndexes[0]].getCurrentCard().getName())
             print("The pot is split between ", end="", flush = True)
             for i in range(len(winnerIndexes)):
                 print(self.players[winnerIndexes[i]].getName(), end="", flush = True)

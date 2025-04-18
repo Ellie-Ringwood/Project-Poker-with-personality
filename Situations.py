@@ -33,41 +33,46 @@ class SituationGenerator():
         else:
             return typeArray
 
-    def setFromFile(self, ):
-        if self.intentions == []:
-            f = open("Intentions.txt", "r")
-            for line in f:
-                line = line.strip()
-                intention = []
-                count = 0
-                for word in line.split('],'):
-                    word = word.strip()
-                    word = word.strip("]")
-                    found = False
-                    for i in range(len(word)):
-                        if word[i] != "[" and not found:
-                            array = word[i:].split(",")
-                            found = True
-                            match count:
-                                case 0:
-                                    intention.append(self.stringArrayToTypeArray(array))
-                                case 1:
-                                    intention.append(self.stringArrayToTypeArray(array))
-                                case 2:
-                                    intention.append(self.stringArrayToTypeArray(array))
-                            count += 1
-                self.intentions.append(intention)
-        #self.displayArray(self.intentions)
+    def setFromFile(self, filename):
+        intentions = []
+        try:
+            f = open(str(filename+".txt"), "r")
+        except:
+            self.setToFile(filename,1)
+            f = open(str(filename+".txt"), "r")
+        for line in f:
+            line = line.strip()
+            intention = []
+            count = 0
+            for word in line.split('],'):
+                word = word.strip()
+                word = word.strip("]")
+                found = False
+                for i in range(len(word)):
+                    if word[i] != "[" and not found:
+                        array = word[i:].split(",")
+                        found = True
+                        match count:
+                            case 0:
+                                intention.append(self.stringArrayToTypeArray(array))
+                            case 1:
+                                intention.append(self.stringArrayToTypeArray(array))
+                            case 2:
+                                intention.append(self.stringArrayToTypeArray(array))
+                        count += 1
+            intentions.append(intention)
+        #self.displayArray(intentions)
+        return intentions
 
-    def setToFile(self):
-        self.createSituations()
-        self.findRepeats(self.situations)
-        self.createIntentions()
-        self.findRepeats(self.intentions)
-        f = open("Intentions.txt", "w")
-        for intention in self.intentions:
-            f.write(f"{intention}\n")
-        f.close()
+    def setToFile(self, filename, numberOfScores):
+         situations = self.createSituations()
+         #self.findRepeats(situations)
+         intentions = self.createIntentions(situations, numberOfScores)
+         #self.findRepeats(intentions)
+         f = open(str(filename+".txt"), "w")
+         for intention in intentions:
+             f.write(f"{intention}\n")
+         f.close()
         
     def addSituation(self,roundNum, card, callCheckFund, canRaise, bluffBelief, communityCard):
         match communityCard:
@@ -118,14 +123,18 @@ class SituationGenerator():
                 newArray.append(element)
         print(len(array)-len(newArray),"repeated elements")
 
-    def createIntentions(self):
-        profileScores = [0,0,0,0]
-        #outcomeScore = 0
-        for situation in self.situations:
-            possibleActions = self.getPossibleActions(situation)
-            for action in possibleActions:
-                self.intentions.append([situation, profileScores, action]) 
-                #self.intentions.append([situation, [profileScores, outcomeScore], action]) 
+    def createIntentions(self, situations, numberOfScores):
+        profileScores = []
+        intentions = []
+        ## create score array for each profile
+        for i in range(numberOfScores):
+             profileScores.append(0)
+             
+        for situation in situations:
+             possibleActions = self.getPossibleActions(situation)
+             for action in possibleActions:
+                 intentions.append([situation, profileScores, action])
+        return intentions
 
     def displayArray(self,array):
         print(len(array))
@@ -150,13 +159,12 @@ class SituationGenerator():
         possibleActions.append("fold")
         return possibleActions
             
-    def findIntentions(self, roundNum, cardName, callCheckFund, canRaise, bluffBelief, communityCard):
+    def findIntentions(self,intentions, roundNum, cardName, callCheckFund, canRaise, bluffBelief, communityCard):
         if roundNum == 1:
             communityCard = "null"
-        #print("Round, card, call/check, raise, bluff, community")
+            
         validIntentions = []
-        
-        for intention in self.intentions:
+        for intention in intentions:
             situation = intention[0]
             
             if (roundNum == situation[0]) or (situation[0] == "any"):
@@ -166,10 +174,6 @@ class SituationGenerator():
                             if(bluffBelief == situation[4]) or (situation[4] == "any"):
                                 if(communityCard == situation[5]) or (situation[5] == "any"):
                                     validIntentions.append(intention)
-                                    
-
-        #for intention in validIntentions:
-        #   print(intention)
         return validIntentions
 
 """

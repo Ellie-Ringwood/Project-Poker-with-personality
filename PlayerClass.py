@@ -77,7 +77,7 @@ class Player():
         self.balance += amount
         #print(self.name, "New balance: ", self.balance)
 
-    def getValidAction(self, canCheck, canCall, canRaise):
+    def getAction(self):
         while True:
             try:
                 action = str(input("")).lower()
@@ -85,13 +85,13 @@ class Player():
                 print("Please enter a string")
                 continue
             if (action in self.actions):
-                if ((action == "check")and(canCheck == False)):
+                if ((action == "check")and(self.canCheck == False)):
                     print("You cannot check currently, enter valid action:")
                     continue
-                elif((action == "call")and(canCall == False)):
+                elif((action == "call")and(self.canCall == False)):
                     print("You cannot call currently, enter valid action:")
                     continue
-                elif((action == "raise")and(canRaise == False)):
+                elif((action == "raise")and(self.canRaise == False)):
                     print("You cannot raise as maximum raises per player is",self.table.addToPotmaxRaisesEach,", enter valid action:")
                     continue
                 else:
@@ -116,31 +116,20 @@ class Player():
         print("Card:",self.currentCard.getName())  
 
     def bet(self):
+        ## print information for researcher
         self.info()
         action = ""
-
-        diff = self.getDifference()
-
-        print("\nEnter action from available actions:")
-        self.canCall = False
-        self.canCheck = False
-        self.canRaise = False
-        if (self.amountBetThisRound < self.table.getCurrentBet()): ## if bets not equal, needs to call to get to same amount
-            if (self.balance >= diff): ##if has enough funds to call
-                print(" - Call (",diff,")")
-                self.canCall = True
-        else:
-            print(" - Check")
-            self.canCheck = True
         
-        if (self.timesRaisedThisRound < self.table.maxRaisesEach): ## if not past max bets, can raise
-            if(self.balance >= diff + self.table.raiseAmount):
-                print(" - Raise (",diff + self.table.raiseAmount,")")
-                self.canRaise = True
-
-        print(" - Fold")
-        action = self.getValidAction(self.canCheck,self.canCall, self.canRaise)
-
+        ## get difference between the amount bet this round by the agent and the other player
+        diff = self.getDifference()
+        
+        ## get and output available actions
+        print("\nAvailable actions:")
+        self.availableActions(diff)
+        
+        ## choose action
+        action = self.getAction()
+        
         self.GoToNextPlayer(action)
 
         match action:
@@ -153,7 +142,27 @@ class Player():
             case "fold": # if everyone but one player folds, they automatically win the hand
                 self.folded = True
                 self.table.playerFolds(self)
-        ## CHECK = no adding to pot, matching previous bet - e.g. just using blinds
+            ## CHECK = no adding to pot, matching previous bet - e.g. just using blinds
+
+    def availableActions(self, diff):
+        self.canCall = False
+        self.canCheck = False
+        self.canRaise = False
+
+        if (self.amountBetThisRound < self.table.getCurrentBet()): ## if bets not equal, needs to call to get to same amount
+            if (self.balance >= diff): ##if has enough funds to call
+                print(" - Call(",diff,")")
+                self.canCall = True
+        else:
+            print(" - Check")
+            self.canCheck = True
+        
+        if (self.timesRaisedThisRound < self.table.maxRaisesEach): ## if not past max bets, can raise
+            if(self.balance >= diff + self.table.raiseAmount):
+                print(" - Raise (",diff + self.table.raiseAmount,")")
+                self.canRaise = True
+
+        print(" - Fold")
 
     def GoToNextPlayer(self, action):
         for i in range(50):
