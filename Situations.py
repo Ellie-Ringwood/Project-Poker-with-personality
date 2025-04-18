@@ -33,7 +33,7 @@ class SituationGenerator():
         else:
             return typeArray
 
-    def setFromFile(self):
+    def setFromFile(self, ):
         if self.intentions == []:
             f = open("Intentions.txt", "r")
             for line in f:

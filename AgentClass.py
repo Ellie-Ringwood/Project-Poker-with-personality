@@ -7,11 +7,13 @@ import copy
 import math
 
 class Agent(Player):
-    def __init__(self,table, startingBalance, name):
+    def __init__(self,table, startingBalance, name, profile):
+        ## use player constructor
         super().__init__(table, startingBalance, name)
+        ## create the intention class object and set
         self.intentionClass = SituationGenerator()
         self.intentionClass.setFromFile()
-        #self.resetHand()
+        
         self.canCall = False
         self.canCheck = False
         self.canRaise = False
@@ -22,7 +24,7 @@ class Agent(Player):
                                    {"check":0.6,"call":0.8, "raise":0.7, "fold":0.2},
                                    {"check":0.6,"call":0.9, "raise":0.6, "fold":0.4}]
                                    #{"check":0.6,"call":0.6, "raise":0.6, "fold":0.3},] #check-call-raise-fold ratios for each profile
-        self.profile = "TA"
+        self.profile = profile
         self.targetActionRatio = {"check":0,"call":0, "raise":0, "fold":0}
         for i in range(len(self.profiles)):
             if self.profile == self.profiles[i]:
