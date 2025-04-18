@@ -29,7 +29,6 @@ class Deck:
 
     def dealCard(self):
         card = self.cards.pop()
-        #print(card)
         return card
 
     def dealSpecificCard(self, cardValue):

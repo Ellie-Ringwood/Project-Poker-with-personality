@@ -14,22 +14,29 @@ class Player():
         #print("player constructed")
 
     def resetHand(self):
+        ## reset variables for new hand
         self.currentCard = Card(-1,"null")
         self.folded = False
         self.amountBetThisRound = 0
         self.timesRaisedThisRound = 0
-
+    
+    ## get functions
     def getBalance(self):
         return self.balance
-    
-    def addBalance(self, amount):
-        self.balance += amount
     
     def getName(self):
         return self.name
     
     def getCurrentCard(self):
         return self.currentCard
+    
+    def getAmountBetThisRound(self):
+        return self.amountBetThisRound
+    
+    ## other functions
+    
+    def addBalance(self, amount):
+        self.balance += amount
     
     def receiveCard(self,card):
         self.currentCard = card
@@ -49,14 +56,9 @@ class Player():
         
     def addAmountBetThisRound(self, amount):
         self.amountBetThisRound += amount
-    
-    def resetAmountBetThisRound(self):
-        self.amountBetThisRound = 0
-
-    def getAmountBetThisRound(self):
-        return self.amountBetThisRound
 
     def removeBlind(self, position):
+        ## if first, remove 1 (small blind) if not remove 2 (big blind)
         blind = 0
         if(position == 0):
             blind = self.table.blindAmount
@@ -69,15 +71,14 @@ class Player():
 
     def removeFunds(self, amount):
         self.balance -= amount
-        #print(self.name, "New balance: ", self.balance)
         self.addAmountBetThisRound(amount)
         self.table.addToPot(amount)
 
     def addFunds(self, amount):
         self.balance += amount
-        #print(self.name, "New balance: ", self.balance)
 
-    def getAction(self):
+    def chooseAction(self):
+        ## perfroms user input validation to make sure the input is an acceptable action
         while True:
             try:
                 action = str(input("")).lower()
@@ -102,6 +103,7 @@ class Player():
         return action
     
     def info(self):
+        ## output information for player
         print("")
         print (self.name, "'s turn to bet:")
         print ("Pot:", self.table.getPot())
@@ -116,11 +118,11 @@ class Player():
         print("Card:",self.currentCard.getName())  
 
     def bet(self):
-        ## print information for researcher
+        ## print information for player
         self.info()
         action = ""
         
-        ## get difference between the amount bet this round by the agent and the other player
+        ## get difference between the amount bet this round by this player and the other player
         diff = self.getDifference()
         
         ## get and output available actions
@@ -128,12 +130,13 @@ class Player():
         self.availableActions(diff)
         
         ## choose action
-        action = self.getAction()
+        action = self.chooseAction()
         
         self.GoToNextPlayer(action)
 
+        ## perform the actions
         match action:
-            case "call": # add to pot, matching check or raise
+            case "call": # remove funds to match the bet
                 self.removeFunds(diff)
             case "raise": # raise by raise amount + any difference to previous player
                 self.removeFunds(diff + self.table.raiseAmount)
@@ -142,33 +145,34 @@ class Player():
             case "fold": # if everyone but one player folds, they automatically win the hand
                 self.folded = True
                 self.table.playerFolds(self)
-            ## CHECK = no adding to pot, matching previous bet - e.g. just using blinds
+            ## CHECK = no adding to pot, matching previous bet, nothing is changed
 
     def availableActions(self, diff):
         self.canCall = False
         self.canCheck = False
         self.canRaise = False
-
-        if (self.amountBetThisRound < self.table.getCurrentBet()): ## if bets not equal, needs to call to get to same amount
-            if (self.balance >= diff): ##if has enough funds to call
+        ## if bets are not equal, then can call (if has enough funds). If bets are equal, then can check
+        if (self.amountBetThisRound < self.table.getCurrentBet()): 
+            if (self.balance >= diff):
                 print(" - Call(",diff,")")
                 self.canCall = True
         else:
             print(" - Check")
             self.canCheck = True
-        
-        if (self.timesRaisedThisRound < self.table.maxRaisesEach): ## if not past max bets, can raise
+        ## if not past max raises and has enough funds, then can raise
+        if (self.timesRaisedThisRound < self.table.maxRaisesEach): 
             if(self.balance >= diff + self.table.raiseAmount):
                 print(" - Raise (",diff + self.table.raiseAmount,")")
                 self.canRaise = True
-
+        ## can always fold
         print(" - Fold")
 
     def GoToNextPlayer(self, action):
+        ## Output for playtesting
         for i in range(50):
             print("--------------------")
         print("Please hand over control to opponent")
-        next = input("Ready for next player's turn? press enter to continue")
+        input("Ready for next player's turn? press enter to continue")
         for i in range(50):
             print("--------------------")
 

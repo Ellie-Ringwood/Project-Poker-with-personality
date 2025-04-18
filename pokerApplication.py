@@ -1,14 +1,11 @@
-import random
-from CardClass import Card
 from DeckClass import Deck
 from TableClass import Table
-from PlayerClass import Player
 
 def NextPlayerOutput():
     ## tell players who the next player is and stop players from seeing each other's turns
     print("--------------------")
     print("Next player is:", table.players[0].getName())
-    next = input("Understand and ready to start "+table.players[0].getName()+"'s turn? press enter to continue")
+    input("Understand and ready to start "+table.players[0].getName()+"'s turn? press enter to continue")
     for i in range(50):
         print("--------------------")     
 

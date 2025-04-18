@@ -1,8 +1,6 @@
 from PlayerClass import Player
 from CardClass import Card
-import time
 import random
-import copy
 import math
 
 class Agent(Player):
@@ -52,7 +50,7 @@ class Agent(Player):
         self.actionCount = {"check":0,"call":0, "raise":0, "fold":0}
         self.totalActionCount = 0
           
-    def getAction(self):
+    def chooseAction(self):
         ## get intentions for the current situation
         intentions = self.getIntentions()
         
@@ -61,16 +59,11 @@ class Agent(Player):
         for intention in intentions:
             action = intention[2]
             scores = intention[1]
-            
-            if (action == "call/check"):
-                if self.canCall == True:
-                    action = "call"
-                elif self.canCheck == True:
-                    action = "check"
+            action = self.getTrueAction(action)
 
             score = 0
             for i in range(len(self.profiles)):
-                if(self.profiles[i] ==self. profile):
+                if(self.profiles[i] == self. profile):
                     score = scores[i]
             intentionPreference[action] = score 
         print(intentionPreference)
@@ -80,25 +73,30 @@ class Agent(Player):
         originalDisc = self.getDiscrepency(self.actionCount, self.targetActionRatio, self.totalActionCount) 
         improvement = self.emptyActionDict.copy()
         
+        self.totalActionCount += 1
         ## for each intention, get improvement to action ratio (getting closer to target) caused by the action
         for intention in intentions:
             action = intention[-1]
             action = self.getTrueAction(action)
                     
-            tempActionCount = self.actionCount.copy() ## needed to copy so as not to change it
+            tempActionCount = self.actionCount.copy()
             for i in tempActionCount:
                 if i == action:
                     tempActionCount[i] += 1
-            tempTotalActionCount = self.totalActionCount + 1
-            actionDisc = self.getDiscrepency(tempActionCount, self.targetActionRatio, tempTotalActionCount)
+            ## get discrepancy between action ratio after this action and the target ratio
+            actionDisc = self.getDiscrepency(tempActionCount, self.targetActionRatio, self.totalActionCount)
+            ## get difference between the original discrepency and the discrepancy after each action
+            ## positive means its improved overall and negative means its pushed the action ratio away from the target
             improvement[action] = round(originalDisc - actionDisc, 3)
         print(improvement)
         
         decisionScores = self.emptyActionDict.copy()
         for i in intentionPreference:
+            # for each action, add the scores from the intention file and the action ratio improvement to get the decision score
             decisionScores[i] = round(intentionPreference[i] + improvement[i],3) #+ (random.randint(0,3)/10), 3)
         print(decisionScores)
 
+        ## pick the best action based on highest decision score, allow for multiple of same value
         bestScore = -10 
         bestActions = []
         for action in decisionScores:
@@ -108,50 +106,27 @@ class Agent(Player):
             elif (decisionScores[action] == bestScore):
                 bestActions.append(action)
             
+        ## if more than one acvtion with same best score, pick randomly
         if(len(bestActions) == 0):
             chosenAction = bestActions[0]
         else:
             chosenAction = bestActions[random.randint(0,len(bestActions)-1)]           
         
+        ## increase action count for chosen action
         for i in self.actionCount:
             if i == chosenAction:
                 self.actionCount[i] += 1
-        self.totalActionCount += 1
         
+        chosenAction = self.getTrueAction(chosenAction)
+        
+        ## show to researcher and allow to type
         print("\n chosen action:",chosenAction)
         input("Faff: ")
 
-        chosenAction = self.getTrueAction(chosenAction)
-        
         return chosenAction
     
-    def getDiscrepency(self, current, target, total):
-        discrepency = 0
-        
-        #ratio = self.emptyActionDict.copy()
-        diff = self.emptyActionDict.copy()
-        for i in current:
-            try:
-                value = current[i] / total
-            except:
-                value = 0
-            #print("i:", i, value)
-            diff[i] = math.sqrt(pow(value-target[i],2))
-            #print(diff[i])
-            
-        for i in diff:
-           discrepency += diff[i]
-        return discrepency
-    
-    def getTrueAction(self, action):
-        if (action == "call/check"):
-            if self.canCall == True:
-                action = "call"
-            elif self.canCheck == True:
-                action = "check"   
-        return action
-
     def getIntentions(self):
+        ## pass in the current situation to find the intentions for that situation
         canCallOrCheck = self.canCheck or self.canCall
         
         bluff = self.predictBluff()
@@ -163,12 +138,43 @@ class Agent(Player):
             community = "null"
         
         intentions = self.table.intentionClass.findIntentions(self.intentions, self.table.currentRound,self.currentCard.getName(),canCallOrCheck,self.canRaise,bluff,community)
-        #intentions = self.intentionClass.findIntentions(self.table.currentRound,self.currentCard.getName(),canCallOrCheck,canRaise,bluff,community)
         return intentions
 
     def predictBluff(self):
+        ## would have been expanded
         return "null"
+    
+    def getTrueAction(self, action):
+        if (action == "call/check"):
+            if self.canCall == True:
+                action = "call"
+            elif self.canCheck == True:
+                action = "check"   
+        return action
+    
+    def getDiscrepency(self, current, target, total):
+        ## This function is used to calculate how much a array is different from a target array
+        discrepency = 0
         
-
-
-
+        diff = self.emptyActionDict.copy()
+        ## for each action, divide by total to get a decimal
+        ## then get the difference between the decimal and the target for that action (magnitude)
+        for i in current:
+            try:
+                value = current[i] / total
+            except:
+                value = 0
+            diff[i] = math.sqrt(pow(value-target[i],2))
+        
+        ## discrepency is the sum of the differences for all of the actions
+        for i in diff:
+           discrepency += diff[i]
+        return discrepency
+    
+    def getTrueAction(self, action):
+        if (action == "call/check"):
+            if self.canCall == True:
+                action = "call"
+            elif self.canCheck == True:
+                action = "check"   
+        return action
