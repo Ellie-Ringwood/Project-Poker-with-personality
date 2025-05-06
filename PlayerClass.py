@@ -12,6 +12,16 @@ class Player():
         self.canCheck = False
         self.canRaise = False
         #print("player constructed")
+        """
+        ## this code is the unfinished code for custom profiles
+        ## it gets an intention file (or creates one) using the player name
+        ## it tries to get the action ratio stored at the start of the file
+        
+        self.intentions = table.getIntentionClass().setFromFile(name)
+        if self.intentions[0].startswith("actionRatio"):
+            print(self.intentions[0]) ## trying to get action ratio from start of intention file
+            self.intentions.pop(0)
+        """
 
     def resetHand(self):
         ## reset variables for new hand
@@ -146,6 +156,8 @@ class Player():
                 self.folded = True
                 self.table.playerFolds(self)
             ## CHECK = no adding to pot, matching previous bet, nothing is changed
+        ## code for tracking actions for creating custom profiles
+        ##self.recordIntentions(action)
 
     def availableActions(self, diff):
         self.canCall = False
@@ -178,4 +190,29 @@ class Player():
 
         print("Opponent performed",action,"action\n")
 
-
+    """
+    ## unused code for creating custom profiles of the player
+    def recordIntentions(self, action):
+        situation = []
+        canCallOrCheck = self.canCall or self.canCheck
+        communityCard = "null"
+        if self.table.communityCard.getName() != "null":
+            if self.table.communityCard == self.currentCard:
+                communityCard = "same"
+            else:
+                communityCard = "diff"
+             
+        intentions = self.table.intentionClass.findIntentions(self.intentions, self.table.currentRound,self.currentCard.getName(),
+                                                              canCallOrCheck,self.canRaise,"null",communityCard)
+        print(intentions)
+        currentIntention = []
+        for intention in intentions:
+            intentionAction = intention[-1]
+            if (intention[-1] == "call/check"):
+                if self.canCall == True:
+                    intentionAction = "call"
+                elif self.canCheck == True:
+                    intentionAction = "check"
+            if (intentionAction == action):
+                currentIntention = intention
+    """
