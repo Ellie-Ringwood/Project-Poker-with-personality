@@ -51,15 +51,15 @@ while playingHand:
                     table.players[i].removeBlind(i)
                 table.addCurrentBet(table.blindAmount*2)
 
-                """ ## Deal cards manually (for testing)
+                 ## Deal cards manually (for testing)
                 table.players[0].receiveCard(deck.dealSpecificCard("Queen"))
                 table.players[1].receiveCard(deck.dealSpecificCard("Queen"))
-                """
+                
                 
                 ## shuffle and deal 1 card to each player
-                deck.shuffleDeck()
-                for i in range(len(table.players)):
-                    table.players[i].receiveCard(deck.dealCard())
+                #deck.shuffleDeck()
+                #for i in range(len(table.players)):
+                #    table.players[i].receiveCard(deck.dealCard())
 
                 # betting round
                 table.handNotWon = table.betting()
@@ -69,6 +69,7 @@ while playingHand:
         ## round 2   
         elif (table.currentRound == 2) and table.handNotWon == True:
             print("\n----------------\nRound 2: Table gets dealt one community card, then bet")
+            table.newRound()
 
             # shuffle and deal 1 community card to the table
             deck.shuffleDeck()

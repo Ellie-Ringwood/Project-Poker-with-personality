@@ -9,7 +9,7 @@ class Table:
         ## create communial intention class, so its niot repeated by each agent
         self.intentionClass = SituationGenerator()
         ## enter players, starting funds and names
-        self.possiblePlayers = [Player(self,20,"Dad"), Agent(self,20,"AI/Ellie","TA")] ## Agent(self,20,"AI/Ellie","TA")   ##  Player(self,20,"AI/Ellie")
+        self.possiblePlayers = [Player(self,20,"Human"), Agent(self,20,"AI agent - LP","LP")] ## Agent(self,20,"AI/Ellie","TA")   ##  Player(self,20,"AI/Ellie")
         ## set variables for the game
         self.resetTable()
         self.blindAmount = 1
@@ -49,7 +49,7 @@ class Table:
 
     def newRound(self):
         ## changes raise amount for second round
-        self.raiseAmount = 2 * self.current_round
+        self.raiseAmount = 2 * self.currentRound
 
     def addToPot(self, amount):
         self.pot += amount
